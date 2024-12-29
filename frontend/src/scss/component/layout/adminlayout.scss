@@ -1,0 +1,82 @@
+@use "../../color_variables.scss" as color_variables;
+
+.adminLayoutNavbar {
+  width: 20%;
+  height: 100vh;
+  padding: 2rem 1rem !important;
+}
+.navmain {
+  .nav-logo {
+    margin: 0.8rem 0rem;
+    h1 {
+      margin-left: 1.5rem;
+    }
+    margin-bottom: 2rem;
+  }
+  padding: 1rem 1rem !important;
+  border-radius: 2rem;
+  background-color: color_variables.$light-100-opacity;
+  .navmenuItems {
+    // margin: 0rem 1rem;
+    padding-top: 0.1rem;
+    cursor: pointer;
+    .active {
+      color: color_variables.$primary-color-700 !important;
+      background-color: color_variables.$primary-color-100;
+      border-radius: 0px 0.5rem 0.5rem 0px !important;
+      font-weight: 600;
+      position: relative;
+      &::before {
+        content: "";
+        position: absolute;
+        background-color: color_variables.$primary-color-700;
+        height: 100%;
+        width: 4px;
+        top: 0;
+        left: 0px;
+      }
+    }
+
+    .navmenuitem {
+      padding: 1rem 0.4rem 1rem 1.5rem;
+      font-size: 18px !important;
+      line-height: 24px !important;
+      // margin: 2.2rem 0rem;
+      color: color_variables.$dark-100;
+      display: flex;
+      justify-content: start;
+      align-items: center;
+      gap: 1rem;
+      margin: 0.5rem 0rem 0.2rem 0rem;
+      .listIcons {
+        font-size: 1.5rem;
+      }
+    }
+  }
+}
+
+.adminLayoutBody {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 1.5rem;
+  .authlayoutsubtitle {
+    color: color_variables.$text-secondary !important;
+  }
+  .profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-radius: 1rem;
+    border: 1px gray solid;
+    padding: 0.2rem 1rem;
+    .details-user{
+      line-height: 18px;
+      .details-user-name{
+        font-weight: 700;
+      }
+      .details-user-role{
+        color: color_variables.$text-secondary !important;
+      }
+    }
+  }
+}

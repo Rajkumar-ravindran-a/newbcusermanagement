@@ -1,0 +1,9 @@
+@use "../../color_variables.scss" as color_variables;
+
+.custom{
+  padding: 1.3rem;
+  .table-row{
+    font-weight: 300 !important;
+    color: color_variables.$text-secondary;
+  }
+}

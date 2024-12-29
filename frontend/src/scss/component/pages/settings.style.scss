@@ -1,0 +1,19 @@
+@use "../../color_variables.scss" as color_variables;
+
+.settings-mainCard{
+    margin-top: 1rem;
+    padding: 1rem;
+    .broker-title{
+        padding: 1rem;
+        font-style: bold;
+    }
+    .broker-form{
+        padding: 1rem;
+        .submit-btn{
+            padding: 1.5rem 2.5rem !important;
+            margin-top: 0.2rem;
+            color: color_variables.$white;
+            background-color: color_variables.$primary-color-600;
+        }
+    }
+}
