@@ -10,10 +10,26 @@ from models.userModel import TradeData, Users, userRole, Status
 from config.dbconnection import sessionLocal
 from sqlalchemy.orm import Session
 from sqlalchemy import exc
+from sqlalchemy.future import select
+from config.dbconnection import engine, base
 
 
 # Initialize the FastAPI app
 app = FastAPI()
+
+def get_db():
+    db = sessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@app.on_event("startup")
+async def createTable(session: Session = Depends(get_db)):
+    base.metadata.create_all(bind=engine)
+    print("Created table successfully")
+    
 
 # JWT configuration
 SECRET_KEY = "your_secret_key"  # Replace with a strong secret key
@@ -45,12 +61,6 @@ pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-def get_db():
-    db = sessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 def get_current_user(

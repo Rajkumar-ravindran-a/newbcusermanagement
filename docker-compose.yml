@@ -1,6 +1,19 @@
 version: '3.8'
 
 services:
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234567
+      MYSQL_DATABASE: userManagement
+    volumes:
+      - db_data:/var/lib/mysql
+
+
   backend:
     build:
       context: ./backend
@@ -9,25 +22,13 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DB_HOST=localhost
+      - DB_HOST=db              # Use the service name of the MySQL container
       - DB_PORT=3306
       - DB_USER=root
       - DB_PASSWORD=1234567
       - DB_NAME=userManagement
     depends_on:
       - db
-
-  db:
-    image: mysql:8.0
-    container_name: mysql-db
-    restart: always
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: example
-      MYSQL_DATABASE: mydb
-    volumes:
-      - db_data:/var/lib/mysql
 
   frontend:
     build:

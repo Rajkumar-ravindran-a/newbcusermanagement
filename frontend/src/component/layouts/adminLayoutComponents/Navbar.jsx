@@ -26,20 +26,20 @@ const Navbar = () => {
         <ul>
           <li
             className={
-              activePage === "/dashboard" ? "active navmenuitem" : "navmenuitem"
+              activePage === "/home" ? "active navmenuitem" : "navmenuitem"
             }
-            onClick={() => handleNavigation("/dashboard")}
+            onClick={() => handleNavigation("/home")}
           >
             <RxDashboard className="listIcons" />
             Dashboard
           </li>
           <li
             className={
-              activePage === "/allemployees"
+              activePage === "/dashboard"
                 ? "active navmenuitem"
                 : "navmenuitem"
             }
-            onClick={() => handleNavigation("/allemployees")}
+            onClick={() => handleNavigation("/dashboard")}
           >
             <FaUsers className="listIcons" /> All Employees
           </li>

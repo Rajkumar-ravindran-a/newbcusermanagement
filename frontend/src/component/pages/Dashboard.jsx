@@ -7,11 +7,10 @@ import { Input } from "@nextui-org/input";
 import { Formik, Field, Form, useFormikContext } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import { Select, SelectItem } from "@nextui-org/react";
+import { Card, Select, SelectItem } from "@nextui-org/react";
 import { Button } from "@mui/material";
 import axios from "axios";
-
-
+import AdminLayout from "../layouts/AdminLayout";
 
 const Dashboard = () => {
   const token = localStorage.getItem("token");
@@ -74,11 +73,10 @@ const Dashboard = () => {
     toast.success("User added successfully");
     getAllUsers();
     setModelPopup(!modelPopup);
-    
   };
 
   return (
-    <MainPage>
+    <AdminLayout pageTitle="All users" pageSubtitle="Manage user details">
       <ModelPoper open={modelPopup} handleClose={handleModelPopup}>
         <Typography variant="h6" className="mb-2">
           Add user
@@ -171,23 +169,25 @@ const Dashboard = () => {
           )}
         </Formik>
       </ModelPoper>
-      <div className="flex flex-col flex-1">
-        <div className="flex space-between ">
-          <Typography variant="h5" className="mb-4">
-            Users
-          </Typography>
-          <Button
-            className="h-5 mb-4"
-            onClick={() => handleModelPopup()}
-            variant="outlined"
-          >
-            Add User
-          </Button>
+      <Card className="p-3 mt-4">
+        <div className="flex flex-col flex-1">
+          <div className="flex space-between ">
+            {/* <Typography variant="h5" className="mb-4">
+              Users
+            </Typography> */}
+            <Button
+              className="h-5 mb-4"
+              onClick={() => handleModelPopup()}
+              variant="outlined"
+            >
+              Add User
+            </Button>
+          </div>
+          {console.log(userData)}
+          <TableComponent Userdata={userData} />
         </div>
-        {console.log(userData)}
-        <TableComponent Userdata={userData} />
-      </div>
-    </MainPage>
+      </Card>
+    </AdminLayout>
   );
 };
 
