@@ -12,7 +12,8 @@ services:
       MYSQL_DATABASE: userManagement
     volumes:
       - db_data:/var/lib/mysql
-
+    networks:
+      - app-network
 
   backend:
     build:
@@ -22,13 +23,15 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DB_HOST=db              # Use the service name of the MySQL container
+      - DB_HOST=db
       - DB_PORT=3306
       - DB_USER=root
       - DB_PASSWORD=1234567
       - DB_NAME=userManagement
     depends_on:
       - db
+    networks:
+      - app-network
 
   frontend:
     build:
@@ -39,6 +42,12 @@ services:
       - "3000:3000"
     stdin_open: true
     tty: true
+    networks:
+      - app-network
 
 volumes:
   db_data:
+
+networks:
+  app-network:
+    driver: bridge

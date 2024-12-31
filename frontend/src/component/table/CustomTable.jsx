@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@nextui-org/react";
 
 const CustomTable = ({ title = [], tableData = [] }) => {
+  console.error(tableData)
   return (
     <div className="custom">
       <table className="w-full">
@@ -15,7 +16,7 @@ const CustomTable = ({ title = [], tableData = [] }) => {
             ))}
           </tr>
         </thead>
-        <hr className="mb-3" />
+        {/* <hr className="mb-3" /> */}
         {/* Table Body */}
         <tbody>
           {tableData.map((rowData, rowIndex) => (
@@ -34,7 +35,7 @@ const CustomTable = ({ title = [], tableData = [] }) => {
                   )}
                 </td>
               ))}
-              <hr />
+              {/* <hr /> */}
             </tr>
           ))}
         </tbody>

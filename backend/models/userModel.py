@@ -5,6 +5,17 @@ from config.dbconnection import engine, base
 
 base = base
 
+class Brokers(base):
+    __tablename__ = 'brokers'
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    brokerId = Column(Integer, primary_key=True, index=True)
+    brokerName = Column(String(50), nullable=False)
+    fundAllocated = Column(Integer, nullable=True, index=True)
+    brokerStatus = Column(Integer,  ForeignKey("status.id"), nullable=False, default=1)
+    releaseDate = Column(DateTime, nullable=True)
+    createAt = Column(DateTime, index=True, default=datetime.now)
+    updatedAt = Column(DateTime, index=True, default=datetime.now)
+
 
 class userRole(base):
     __tablename__ = "userRole"

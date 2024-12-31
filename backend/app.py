@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional, List
-from models.userModel import TradeData, Users, userRole, Status
+from models.userModel import TradeData, Users, userRole, Status, Brokers
 from config.dbconnection import sessionLocal
 from sqlalchemy.orm import Session
 from sqlalchemy import exc
@@ -334,6 +334,47 @@ async def get_users(
     except exc.SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail="Database error occurred")
 
+@app.post("/createBroker")
+async def createBreak(response: dict, db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user)):
+    if(current_user.role != 1):
+        HTTPException(status_code=500, detail="unAuthorized")
+    createBrocker = Brokers(
+        brokerId = response["brokerId"],
+        brokerName = response["brokerName"],
+        fundAllocated = response["fundAllocated"],
+    )
+    try:
+        db.add(createBrocker)
+        db.commit()
+        return {'message': 'Brokers created successfully'}
+    except exc.SQLAlchemyError as e:
+        db.rollback()
+        print("Error", e)
+        raise HTTPException(status_code=500, detail="Database error")
+    except Exception as err:
+        print("Error", err)
+        raise HTTPException(status_code=500, detail="internal server error")
+    
+@app.get('/getAllBroker')
+async def getBroker(db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user)):
+    try:
+        brokerData = db.query(Brokers).all()
+        outPut = []
+        for datas in brokerData:
+            outPut.append({
+                "brokerId":datas.brokerId,
+                "brokerName":datas.brokerName,
+                "fundAllocated":datas.fundAllocated,
+                "startDate": datas.createAt,
+                "releaseDate": datas.releaseDate if datas.releaseDate else None,
+            })
+        return {'message': 'Brokers fetched successfully', "data": outPut}
+    
+    except Exception as e:
+        print("error in getBrokerApi", e)
+        return {"message": "Internal server error"}
 
 class StrategyDataIn(BaseModel): 
     stratagyData: dict 

@@ -6,6 +6,7 @@ import { TextField, Button, Typography } from "@mui/material";
 import axios, { Axios } from "axios";
 import { useNavigate } from "react-router-dom";
 import {jwtDecode} from 'jwt-decode';
+import { toast } from "react-toastify";
 
 const AuthPage = () => {
   // Form validation schema using Yup
@@ -23,20 +24,26 @@ const AuthPage = () => {
     },
     validationSchema,
     onSubmit: async (values) => {
-      const authData = await axios.post("http://localhost:8000/login", values, {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-      console.log("authData: ", authData)
-      if(authData.status===200){
-        localStorage.setItem('token', authData.data.access_token)
-        const tokenDecode = jwtDecode(authData.data.access_token);
-        if(tokenDecode.role===1){
-          navigate("/home")
-        }
-        else if(tokenDecode.role===2){
-          navigate("/datamanagement")
-        }
+      try{
+        const authData = await axios.post("http://localhost:8000/login", values, {
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        });
         
+        if(authData.status===200){
+          localStorage.setItem('token', authData.data.access_token)
+          const tokenDecode = jwtDecode(authData.data.access_token);
+          if(tokenDecode.role===1){
+            navigate("/home")
+          }
+          else if(tokenDecode.role===2){
+            navigate("/datamanagement")
+          }
+          
+        }
+      }
+      catch(errors){
+        console.log("authData", errors)
+        toast.error(errors?.response?.data?.detail)
       }
     },
   });

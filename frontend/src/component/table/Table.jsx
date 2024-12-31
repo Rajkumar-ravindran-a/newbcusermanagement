@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { CgMoreO } from "react-icons/cg";
-import Pagination from "react-bootstrap/Pagination";
+import { Pagination } from "@nextui-org/react";
+import { Input } from "@nextui-org/react";
+import { Typography } from "@mui/material";
 
 export const columns = [
   { name: "NAME", uid: "name" },
@@ -68,8 +70,8 @@ const statusColorMap = {
   deleted: "red",
 };
 
-const TableComponent = ({Userdata}) => {
-  console.log(Userdata,"Userdata")
+const TableComponent = ({ Userdata }) => {
+  console.log(Userdata, "Userdata");
   const renderCell = useCallback((user, columnKey) => {
     const cellValue = user[columnKey];
 
@@ -89,7 +91,7 @@ const TableComponent = ({Userdata}) => {
             />
             <div>
               <strong>{cellValue}</strong>
-              <p style={{ margin: 0, fontSize: "0.8em", fontWeight:"500" }}>
+              <p style={{ margin: 0, fontSize: "0.8em", fontWeight: "500" }}>
                 {user.firstName}
               </p>
               <p style={{ margin: 0, fontSize: "0.8em", color: "gray" }}>
@@ -101,7 +103,7 @@ const TableComponent = ({Userdata}) => {
       case "role":
         return (
           <div>
-            <p style={{ margin: 0}}>{cellValue}</p>
+            <p style={{ margin: 0 }}>{cellValue}</p>
             <p style={{ margin: 0, fontSize: "0.8em", color: "gray" }}>
               {user.team}
             </p>
@@ -155,38 +157,59 @@ const TableComponent = ({Userdata}) => {
   }, []);
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead>
-        <tr>
-          {columns.map((column) => (
-            <th
-              key={column.uid}
-              style={{
-                textAlign: "left",
-                padding: "10px",
-                borderBottom: "1px solid #ddd",
-              }}
-            >
-              {column.name}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {Userdata.map((user) => (
-          <tr key={user.id}>
+    <div>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          marginBottom: "1.5rem",
+        }}
+      >
+        <thead>
+          <tr>
             {columns.map((column) => (
-              <td
+              <th
                 key={column.uid}
-                style={{ padding: "10px", borderBottom: "1px solid #ddd" }}
+                style={{
+                  textAlign: "left",
+                  padding: "10px",
+                  borderBottom: "1px solid #ddd",
+                }}
               >
-                {renderCell(user, column.uid)}
-              </td>
+                {column.name}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {Userdata.map((user) => (
+            <tr key={user.id}>
+              {columns.map((column) => (
+                <td
+                  key={column.uid}
+                  style={{ padding: "10px", borderBottom: "1px solid #ddd" }}
+                >
+                  {renderCell(user, column.uid)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="flex justify-between mt-6">
+        <div className="flex gap-3 align-middle ">
+          <Typography variant="subtitle1">Showing</Typography>
+          <Input classNames="offset-input w-1" style={{ width: "1.5rem" }} />
+        </div>
+        <Pagination
+          loop
+          showControls
+          color="success"
+          initialPage={1}
+          total={5}
+        />
+      </div>
+    </div>
   );
 };
 

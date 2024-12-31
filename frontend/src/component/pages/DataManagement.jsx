@@ -20,7 +20,6 @@ import axios from "axios";
 import { DatePicker } from "@nextui-org/react";
 import { toast } from "react-toastify";
 
-
 const dateConversion = (dateString) => {
   const mysqlDatetime = new Date(dateString)
     .toISOString()
@@ -66,7 +65,7 @@ const DataManagement = () => {
   };
 
   const validationSchema = Yup.object().shape({
-    Date: Yup.string().required("Date is required"),
+    // Date: Yup.string().required("Date is required"),
     broker: Yup.string().required("Broker is required"),
     tradeId: Yup.string().required("ID is required"),
     strategy: Yup.string().required("Strategy is required"),
@@ -79,16 +78,20 @@ const DataManagement = () => {
     sellValue: Yup.number()
       .required("Sell Value is required")
       .positive("Must be positive"),
+    dealer: Yup.string().required("Dealer is required"),
+    pl: Yup.string().required("P/l is required")
   });
 
   const initialValues = {
-    Date: null,
+    Date: new Date(),
     broker: "",
     tradeId: "",
     strategy: "",
     counter: "",
     buyValue: "",
     sellValue: "",
+    dealer: "",
+    pl: "",
   };
 
   const handleSubmit = async (values) => {
@@ -127,26 +130,39 @@ const DataManagement = () => {
         >
           {({ values, errors, touched, setFieldValue }) => (
             <Form>
+              {console.log(errors, "e===")}
               <div className="flex gap-3 mb-3">
-                <DatePicker
+                {/* <DatePicker
                   className="max-w-[284px]"
                   label="Date"
                   value={values.Date}
                   onChange={(newDate) => setFieldValue("Date", newDate)}
                   error={touched.Date && Boolean(errors.Date)}
                   helperText={touched.Date && errors.Date}
-                />
+                  defaultValue={new Date()}
+                  isDisabled
+                /> */}
                 <Select
                   name="broker"
                   placeholder="Select Broker"
                   label="Broker"
                   value={values.broker}
                   onChange={(e) => setFieldValue("broker", e.target.value)}
-                  error={touched.broker && Boolean(errors.broker)}
-                  helperText={touched.broker && errors.broker}
+                  // error={touched.broker && Boolean(errors.broker)}
+                  isInvalid={touched.broker && Boolean(errors.broker)}
+                  errorMessage={errors.broker}
                 >
                   <SelectItem key="Upstocks">Upstocks</SelectItem>
                 </Select>
+                <Input
+                  name="dealer"
+                  label="Dealer"
+                  placeholder="Enter Dealer Name"
+                  value={values.dealer}
+                  onChange={(e) => setFieldValue("dealer", e.target.value)}
+                  isInvalid={touched.dealer && Boolean(errors.dealer)}
+                  errorMessage={touched.dealer && errors.dealer}
+                />
               </div>
               <div className="flex gap-2 mb-3">
                 <Input
@@ -155,8 +171,8 @@ const DataManagement = () => {
                   placeholder="Enter ID"
                   value={values.tradeId}
                   onChange={(e) => setFieldValue("tradeId", e.target.value)}
-                  error={touched.tradeId && Boolean(errors.tradeId)}
-                  helperText={touched.tradeId && errors.tradeId}
+                  isInvalid={touched.tradeId && Boolean(errors.tradeId)}
+                  errorMessage={touched.tradeId && errors.tradeId}
                 />
                 <Select
                   name="strategy"
@@ -164,8 +180,8 @@ const DataManagement = () => {
                   label="Strategy"
                   value={values.strategy}
                   onChange={(e) => setFieldValue("strategy", e.target.value)}
-                  error={touched.strategy && Boolean(errors.strategy)}
-                  helperText={touched.strategy && errors.strategy}
+                  isInvalid={touched.strategy && Boolean(errors.strategy)}
+                  errorMessage={touched.strategy && errors.strategy}
                 >
                   <SelectItem key="Strategy 1">Strategy 1</SelectItem>
                 </Select>
@@ -175,8 +191,8 @@ const DataManagement = () => {
                   placeholder="Enter Counter"
                   value={values.counter}
                   onChange={(e) => setFieldValue("counter", e.target.value)}
-                  error={touched.counter && Boolean(errors.counter)}
-                  helperText={touched.counter && errors.counter}
+                  isInvalid={touched.counter && Boolean(errors.counter)}
+                  errorMessage={touched.counter && errors.counter}
                 />
               </div>
               <div className="flex gap-3 mb-3">
@@ -186,8 +202,8 @@ const DataManagement = () => {
                   placeholder="Enter Buy Value"
                   value={values.buyValue}
                   onChange={(e) => setFieldValue("buyValue", e.target.value)}
-                  error={touched.buyValue && Boolean(errors.buyValue)}
-                  helperText={touched.buyValue && errors.buyValue}
+                  isInvalid={touched.buyValue && Boolean(errors.buyValue)}
+                  errorMessage={touched.buyValue && errors.buyValue}
                 />
                 <Input
                   name="sellValue"
@@ -195,8 +211,17 @@ const DataManagement = () => {
                   placeholder="Enter Sell Value"
                   value={values.sellValue}
                   onChange={(e) => setFieldValue("sellValue", e.target.value)}
-                  error={touched.sellValue && Boolean(errors.sellValue)}
-                  helperText={touched.sellValue && errors.sellValue}
+                  isInvalid={touched.sellValue && Boolean(errors.sellValue)}
+                  errorMessage={touched.sellValue && errors.sellValue}
+                />
+                <Input
+                  name="pl"
+                  label="P/L"
+                  placeholder="P/L Value"
+                  value={values.pl}
+                  onChange={(e) => setFieldValue("pl", e.target.value)}
+                  isInvalid={touched.pl && Boolean(errors.pl)}
+                  errorMessage={touched.pl && errors.pl}
                 />
               </div>
               <div className="flex justify-end gap-3">

@@ -10,11 +10,12 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME")
 
 
-# dataBaseUrl = "mysql+pymysql://root:1234567@127.0.0.1:3306/userManagement"
 
-print(f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/userManagement", "======")
+dataBaseUrl = "mysql+pymysql://root:1234567@127.0.0.1:3306/userManagement"
 
-dataBaseUrl = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/userManagement"
+# print(f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/userManagement", "======")
+
+# dataBaseUrl = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/userManagement"
 
 engine = create_engine(dataBaseUrl, pool_size=20, max_overflow=0)
 
