@@ -357,13 +357,17 @@ async def createBreak(response: dict, db: Session = Depends(get_db),
         raise HTTPException(status_code=500, detail="internal server error")
     
 @app.get('/getAllBroker')
-async def getBroker(db: Session = Depends(get_db),
+async def getBroker(status:Optional[int] = None, db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user)):
     try:
-        brokerData = db.query(Brokers).all()
+        if status is None:
+            brokerData = db.query(Brokers).all()
+        else:
+            brokerData = db.query(Brokers).filter(Brokers.brokerStatus == status).all()
         outPut = []
         for datas in brokerData:
             outPut.append({
+                "id": datas.id,
                 "brokerId":datas.brokerId,
                 "brokerName":datas.brokerName,
                 "fundAllocated":datas.fundAllocated,
@@ -375,6 +379,28 @@ async def getBroker(db: Session = Depends(get_db),
     except Exception as e:
         print("error in getBrokerApi", e)
         return {"message": "Internal server error"}
+    
+    
+@app.put('/releaseBroker/{id}')
+async def relaseBroker(id: int, db: Session = Depends(get_db), current_user: UserResponse = Depends(get_current_user)):
+    try:
+        brokerData = db.query(Brokers).filter(Brokers.id == id).first()
+        
+        if brokerData is None:
+            raise HTTPException(status_code=404, detail="Broker not found")
+        
+        brokerData.brokerStatus = 3
+        brokerData.releaseDate = datetime.now()
+        brokerData.updatedAt = datetime.now()
+        
+        db.commit()
+        
+        return{"message": "Broker relase Successfully"}
+            
+    except Exception as e:
+        print("error in relaseBroker", e)
+        return {"message": "Internal server error"}
+    
 
 class StrategyDataIn(BaseModel): 
     stratagyData: dict 

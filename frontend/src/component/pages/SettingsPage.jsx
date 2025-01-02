@@ -47,15 +47,29 @@ const brokerTableTitle = [
 const AdminSettings = () => {
   const [bokerData, setBrokerData] = useState([]);
 
+  const releaseBroker = async (brokerData) => {
+    try {
+      const releaseData = api.put(`/releaseBroker/${brokerData.id}`);
+      if (releaseData.status === 200) {
+        toast.info(`Releasing broker: ${brokerData.brokerName}`);
+        getBrokerData();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message);
+    }
+    console.warn("Releasing Broker:", brokerData);
+    // You can perform additional actions here, such as making an API call
+  };
+
   const getBrokerData = async () => {
     try {
       const brokerData = await api.get("/getAllBroker");
-      for(const bdata of brokerData.data.data){
-        
-        setBrokerData((prev)=>[...prev, {...bdata, "action":true}]);
-
-      }
-      // setBrokerData(brokerData.data.data);
+      const formattedData = brokerData.data.data.map(({ id, ...rest }) => ({
+        ...rest,
+        action: () => releaseBroker({ id, ...rest }), // Pass the entire row data
+      }));
+      setBrokerData(formattedData);
     } catch (error) {
       console.error(error);
       toast.error(error.message);
@@ -75,17 +89,14 @@ const AdminSettings = () => {
   const handleSubmit = async (values, { resetForm }) => {
     try {
       const res = await api.post("/createBroker", values);
-      console.warn(res);
       if (res.status === 200) {
         toast.success(res.data.message);
-        getBrokerData(); 
+        getBrokerData();
       }
-    } catch (err) {
-      {
-        console.error(err, "error in Adding Error");
-      }
-
       resetForm();
+    } catch (err) {
+      console.error(err);
+      toast.error("Error adding broker");
     }
   };
 
@@ -144,7 +155,19 @@ const AdminSettings = () => {
           </Formik>
 
           <div className="mt-4">
-            <CustomTable title={brokerTableTitle} tableData={bokerData} />
+            <CustomTable
+              title={brokerTableTitle}
+              tableData={bokerData}
+              renderAction={(action) => (
+                <Button
+                  onPress={() => {
+                    action();
+                  }}
+                >
+                  Release
+                </Button>
+              )}
+            />
           </div>
         </Card>
       </Card>

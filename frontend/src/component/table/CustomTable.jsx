@@ -1,46 +1,46 @@
 import React from "react";
-import { Button } from "@nextui-org/react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
 
-const CustomTable = ({ title = [], tableData = [] }) => {
-  console.error(tableData)
+const CustomTable = ({ title = [], tableData = [], renderAction }) => {
   return (
-    <div className="custom">
-      <table className="w-full">
+    <TableContainer component={Paper} className="custom">
+      <Table>
         {/* Table Header */}
-        <thead>
-          <tr className="flex justify-between table-row mb-3">
+        <TableHead>
+          <TableRow>
             {title.map((header, index) => (
-              <th className="flex-1" key={index}>
+              <TableCell key={index} align="center" sx={{ fontWeight: "bold" }}>
                 {header}
-              </th>
+              </TableCell>
             ))}
-          </tr>
-        </thead>
-        {/* <hr className="mb-3" /> */}
+          </TableRow>
+        </TableHead>
         {/* Table Body */}
-        <tbody>
+        <TableBody>
           {tableData.map((rowData, rowIndex) => (
-            <tr key={rowIndex} className="flex justify-between mb-3">
+            <TableRow key={rowIndex}>
               {Object.keys(rowData).map((key, colIndex) => (
-                <td className="flex-1 p-2" key={`${rowIndex}-${colIndex}`}>
-                  {key === "action" ? (
-                    <Button
-                      className="bg-blue-500 text-white px-4 py-2 rounded"
-                    //   onClick={() => alert(`Action triggered for row ${rowIndex + 1}`)}
-                    >
-                      Perform Action
-                    </Button>
+                <TableCell key={`${rowIndex}-${colIndex}`} align="center">
+                  {key === "action" && renderAction ? (
+                    renderAction(rowData[key]) // Pass the full `rowData` to the action renderer
                   ) : (
                     rowData[key]
                   )}
-                </td>
+                </TableCell>
               ))}
-              {/* <hr /> */}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 

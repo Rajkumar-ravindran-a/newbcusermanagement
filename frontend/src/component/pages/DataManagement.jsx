@@ -19,6 +19,7 @@ import ModelPoper from "../Model";
 import axios from "axios";
 import { DatePicker } from "@nextui-org/react";
 import { toast } from "react-toastify";
+import api from "../../config/AxiosCofig.js";
 
 const dateConversion = (dateString) => {
   const mysqlDatetime = new Date(dateString)
@@ -30,6 +31,8 @@ const dateConversion = (dateString) => {
 
 const DataManagement = () => {
   const [tradeData, setTradeData] = useState([]);
+  const [brokerData, setBrokerData] = useState([]);
+
   const token = localStorage.getItem("token");
 
   const fetchTrade = async () => {
@@ -43,8 +46,19 @@ const DataManagement = () => {
     }
   };
 
+  const fetchAllBrokers = async () => {
+    try {
+      const BrokerData = await api.get("/getAllBroker?status=1");
+      console.log(BrokerData.data.data, "bro");
+      setBrokerData(BrokerData.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     fetchTrade();
+    fetchAllBrokers();
   }, [token]);
 
   const [page, setPage] = useState(1);
@@ -79,7 +93,7 @@ const DataManagement = () => {
       .required("Sell Value is required")
       .positive("Must be positive"),
     dealer: Yup.string().required("Dealer is required"),
-    pl: Yup.string().required("P/l is required")
+    pl: Yup.string().required("P/l is required"),
   });
 
   const initialValues = {
@@ -147,13 +161,35 @@ const DataManagement = () => {
                   placeholder="Select Broker"
                   label="Broker"
                   value={values.broker}
-                  onChange={(e) => setFieldValue("broker", e.target.value)}
+                  onChange={(e) => {
+                    const data = e.target.value && JSON.parse(e.target.value);
+                    console.log(data);
+                    setFieldValue("broker", data?.brokerName);
+                    setFieldValue("tradeId", data?.brokerId);
+                  }}
                   // error={touched.broker && Boolean(errors.broker)}
                   isInvalid={touched.broker && Boolean(errors.broker)}
                   errorMessage={errors.broker}
                 >
-                  <SelectItem key="Upstocks">Upstocks</SelectItem>
+                  {brokerData &&
+                    brokerData.map((value, index) => (
+                      <SelectItem key={JSON.stringify(value)}>
+                        {value.brokerName}
+                      </SelectItem>
+                    ))}
                 </Select>
+                <Input
+                  isDisabled
+                  name="tradeId"
+                  label="ID"
+                  placeholder="Enter ID"
+                  value={values.tradeId}
+                  onChange={(e) => setFieldValue("tradeId", e.target.value)}
+                  isInvalid={touched.tradeId && Boolean(errors.tradeId)}
+                  errorMessage={touched.tradeId && errors.tradeId}
+                />
+              </div>
+              <div className="flex gap-2 mb-3">
                 <Input
                   name="dealer"
                   label="Dealer"
@@ -162,17 +198,6 @@ const DataManagement = () => {
                   onChange={(e) => setFieldValue("dealer", e.target.value)}
                   isInvalid={touched.dealer && Boolean(errors.dealer)}
                   errorMessage={touched.dealer && errors.dealer}
-                />
-              </div>
-              <div className="flex gap-2 mb-3">
-                <Input
-                  name="tradeId"
-                  label="ID"
-                  placeholder="Enter ID"
-                  value={values.tradeId}
-                  onChange={(e) => setFieldValue("tradeId", e.target.value)}
-                  isInvalid={touched.tradeId && Boolean(errors.tradeId)}
-                  errorMessage={touched.tradeId && errors.tradeId}
                 />
                 <Select
                   name="strategy"
