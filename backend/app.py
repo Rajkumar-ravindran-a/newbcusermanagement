@@ -40,7 +40,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 origins = [
     "http://localhost:3000",  # Replace with your frontend URL, e.g., React app
     "https://yourfrontenddomain.com",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "*"
     # Another domain that needs access
     # You can add more origins here as needed
 ]
