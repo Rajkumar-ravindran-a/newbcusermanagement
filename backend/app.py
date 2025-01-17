@@ -152,6 +152,11 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 
 # API Endpoints
+
+@app.get('/')
+def root():
+    return {"message": "Welcome to the API"}
+
 @app.post("/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     existing_user = db.query(Users).filter(Users.email == user.email).first()
