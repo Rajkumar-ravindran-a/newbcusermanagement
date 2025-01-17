@@ -1,20 +1,6 @@
 version: '3.8'
 
 services:
-  db:
-    image: mysql:8.0
-    container_name: mysql-db
-    restart: always
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: 1234567
-      MYSQL_DATABASE: userManagement
-    volumes:
-      - db_data:/var/lib/mysql
-    networks:
-      - app-network
-
   backend:
     build:
       context: ./backend
@@ -23,13 +9,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_USER=root
-      - DB_PASSWORD=1234567
-      - DB_NAME=userManagement
-    depends_on:
-      - db
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
     networks:
       - app-network
 

@@ -25,31 +25,31 @@ const brokerTableTitle = [
   "Action",
 ];
 
-// const bokerData = [
-//   {
-//     id: 1,
-//     brokerName: "Zerotha",
-//     fundAllocated: "10000000",
-//     startDate: "2024-12-29",
-//     releaseDate: "",
-//     action: "",
-//   },
-//   {
-//     id: 2,
-//     brokerName: "Upstocks",
-//     fundAllocated: "10000000",
-//     startDate: "2024-12-29",
-//     releaseDate: "",
-//     action: "",
-//   },
-// ];
 
 const AdminSettings = () => {
   const [bokerData, setBrokerData] = useState([]);
 
   const releaseBroker = async (brokerData) => {
     try {
-      const releaseData = api.put(`/releaseBroker/${brokerData.id}`);
+      console.log(bokerData)
+      const releaseData = await api.put(`/releaseBroker/${brokerData}/${3}`);
+      console.log(releaseData)
+      if (releaseData.status === 200) {
+        getBrokerData();
+        toast.info(`Releasing broker: ${brokerData}`);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message);
+    }
+    console.warn("Releasing Broker:", brokerData);
+    // You can perform additional actions here, such as making an API call
+  };
+
+  const unreleaseBroker = async (brokerData) => {
+    try {
+      const releaseData = api.put(`/releaseBroker/${brokerData.id}/1`);
+      console.log(releaseData)
       if (releaseData.status === 200) {
         toast.info(`Releasing broker: ${brokerData.brokerName}`);
         getBrokerData();
@@ -65,9 +65,9 @@ const AdminSettings = () => {
   const getBrokerData = async () => {
     try {
       const brokerData = await api.get("/getAllBroker");
-      const formattedData = brokerData.data.data.map(({ id, ...rest }) => ({
+      const formattedData = brokerData.data.data.map((rest) => ({
         ...rest,
-        action: () => releaseBroker({ id, ...rest }), // Pass the entire row data
+        action: () => releaseBroker(rest), // Pass the entire row data
       }));
       setBrokerData(formattedData);
     } catch (error) {
@@ -158,15 +158,7 @@ const AdminSettings = () => {
             <CustomTable
               title={brokerTableTitle}
               tableData={bokerData}
-              renderAction={(action) => (
-                <Button
-                  onPress={() => {
-                    action();
-                  }}
-                >
-                  Release
-                </Button>
-              )}
+              renderAction={releaseBroker}
             />
           </div>
         </Card>

@@ -372,6 +372,7 @@ async def getBroker(status:Optional[int] = None, db: Session = Depends(get_db),
                 "brokerName":datas.brokerName,
                 "fundAllocated":datas.fundAllocated,
                 "startDate": datas.createAt,
+                "status":datas.brokerStatus,
                 "releaseDate": datas.releaseDate if datas.releaseDate else None,
             })
         return {'message': 'Brokers fetched successfully', "data": outPut}
@@ -381,16 +382,18 @@ async def getBroker(status:Optional[int] = None, db: Session = Depends(get_db),
         return {"message": "Internal server error"}
     
     
-@app.put('/releaseBroker/{id}')
-async def relaseBroker(id: int, db: Session = Depends(get_db), current_user: UserResponse = Depends(get_current_user)):
+@app.put('/releaseBroker/{id}/{status}')
+async def relaseBroker(id: int, status: int, db: Session = Depends(get_db), current_user: UserResponse = Depends(get_current_user)):
     try:
         brokerData = db.query(Brokers).filter(Brokers.id == id).first()
         
         if brokerData is None:
             raise HTTPException(status_code=404, detail="Broker not found")
         
+        print(status)
+        
         brokerData.brokerStatus = 3
-        brokerData.releaseDate = datetime.now()
+        brokerData.releaseDate = datetime.now()     
         brokerData.updatedAt = datetime.now()
         
         db.commit()
@@ -399,7 +402,7 @@ async def relaseBroker(id: int, db: Session = Depends(get_db), current_user: Use
             
     except Exception as e:
         print("error in relaseBroker", e)
-        return {"message": "Internal server error"}
+        raise HTTPException(status_code=500, details="Internal server error")
     
 
 class StrategyDataIn(BaseModel): 
