@@ -16,8 +16,10 @@ DB_NAME = os.getenv("DB_NAME")
 # print(f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/userManagement", "======")
 
 dataBaseUrl = (
-    f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    f"postgresql+psycopg2://usermanagement_vn9f_user:htsBtjObNWk8FRvQa7FC7ZypT68jBFYZ@dpg-cu5k8v0gph6c73btgrig-a.oregon-postgres.render.com:5432/{DB_NAME}"
 )
+
+print(dataBaseUrl)
 
 engine = create_engine(dataBaseUrl, pool_size=20, max_overflow=0)
 
