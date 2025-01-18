@@ -25,7 +25,7 @@ const AuthPage = () => {
     validationSchema,
     onSubmit: async (values) => {
       try{
-        const authData = await axios.post("http://localhost:8000/login", values, {
+        const authData = await axios.post("http://13.233.131.250:8000/login", values, {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
         });
         

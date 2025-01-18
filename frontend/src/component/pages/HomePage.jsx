@@ -23,7 +23,7 @@ const HomePage = () => {
   const [userData, setUserData] = useState([]);
 
   const getAllUsers = async () => {
-    const allusers = await axios.get("http://localhost:8000/users", {
+    const allusers = await axios.get("http://13.233.131.250:8000/users", {
       headers: {
         Authorization: `bearer ${token}`,
       },
@@ -34,7 +34,7 @@ const HomePage = () => {
   };
 
   const fetchTrade = async () => {
-    const tradeData = await axios.get("http://localhost:8000/getAllTrade", {
+    const tradeData = await axios.get("http://13.233.131.250:8000/getAllTrade", {
       headers: {
         Authorization: `bearer ${token}`,
       },

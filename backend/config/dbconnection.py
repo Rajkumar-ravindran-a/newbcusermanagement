@@ -16,7 +16,7 @@ DB_NAME = os.getenv("DB_NAME")
 # print(f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/userManagement", "======")
 
 dataBaseUrl = (
-    f"postgresql+psycopg2://usermanagement_vn9f_user:htsBtjObNWk8FRvQa7FC7ZypT68jBFYZ@dpg-cu5k8v0gph6c73btgrig-a.oregon-postgres.render.com:5432/{DB_NAME}"
+    f"postgresql+psycopg2://postgres:Bullcatch#123@13.200.147.23:5432/usermanagement"
 )
 
 print(dataBaseUrl)

@@ -44,7 +44,7 @@ const DataManagement = () => {
   const token = localStorage.getItem("token");
 
   const fetchTrade = async () => {
-    const tradeData = await axios.get("http://localhost:8000/getTrade", {
+    const tradeData = await axios.get("http://13.233.131.250:8000/getTrade", {
       headers: {
         Authorization: `bearer ${token}`,
       },
@@ -124,7 +124,7 @@ const DataManagement = () => {
       Date: values.Date ? dateConversion(values.Date) : null,
     };
     const SubmitData = await axios.post(
-      "http://localhost:8000/create_trade",
+      "http://13.233.131.250:8000/create_trade",
       submissionData,
       {
         headers: {

@@ -20,7 +20,7 @@ const Dashboard = () => {
   const [modelPopup, setModelPopup] = useState(false);
 
   const getAllUsers = async () => {
-    const allusers = await axios.get("http://localhost:8000/users", {
+    const allusers = await axios.get("http://13.233.131.250:8000/users", {
       headers: {
         Authorization: `bearer ${token}`,
       },
@@ -60,7 +60,7 @@ const Dashboard = () => {
 
   const handleSubmit = async (values) => {
     const response = await axios.post(
-      "http://localhost:8000/register",
+      "http://13.233.131.250:8000/register",
       values,
       {
         headers: {
