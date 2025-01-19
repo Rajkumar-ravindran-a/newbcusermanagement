@@ -21,7 +21,6 @@ import {
   InputLabel 
 } from "@mui/material";
 import ModelPoper from "../Model";
-import axios from "axios";
 import { toast } from "react-toastify";
 import api from "../../config/AxiosCofig.js";
 
@@ -44,7 +43,7 @@ const DataManagement = () => {
   const token = localStorage.getItem("token");
 
   const fetchTrade = async () => {
-    const tradeData = await axios.get("http://13.233.131.250:8000/getTrade", {
+    const tradeData = await api.get("/getTrade", {
       headers: {
         Authorization: `bearer ${token}`,
       },
@@ -100,8 +99,7 @@ const DataManagement = () => {
       .required("Buy Value is required")
       .positive("Must be positive"),
     sellValue: Yup.number()
-      .required("Sell Value is required")
-      .positive("Must be positive"),
+      .required("Sell Value is required"),
     dealer: Yup.string().required("Dealer is required"),
     pl: Yup.string().required("P/L is required"),
   });
@@ -123,8 +121,8 @@ const DataManagement = () => {
       ...values,
       Date: values.Date ? dateConversion(values.Date) : null,
     };
-    const SubmitData = await axios.post(
-      "http://13.233.131.250:8000/create_trade",
+    const SubmitData = await api.post(
+      "/create_trade",
       submissionData,
       {
         headers: {

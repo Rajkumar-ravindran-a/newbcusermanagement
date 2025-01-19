@@ -204,10 +204,10 @@ def login_user(
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
+        
     # Create the JWT token
     access_token = create_access_token(
-        data={"email": user.email, "role": user.role, "userId": user.id}
+        data={"email": user.email, "role": user.role, "userId": user.id, "fullName": user.firstName }
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -302,8 +302,6 @@ def getTradeById(db: Session = Depends(get_db),
     except exc.SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail="Database error occurred")
     
-
-
 @app.get("/users", response_model=List[UserResponse])
 async def get_users(
     db: Session = Depends(get_db),
@@ -398,7 +396,7 @@ async def relaseBroker(id: int, status: int, db: Session = Depends(get_db), curr
         
         print(status)
         
-        brokerData.brokerStatus = 3
+        brokerData.brokerStatus = status
         brokerData.releaseDate = datetime.now()     
         brokerData.updatedAt = datetime.now()
         

@@ -9,8 +9,8 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { Card, Select, SelectItem } from "@nextui-org/react";
 import { Button } from "@mui/material";
-import axios from "axios";
 import AdminLayout from "../layouts/AdminLayout";
+import api from "../../config/AxiosCofig";
 
 const Dashboard = () => {
   const token = localStorage.getItem("token");
@@ -20,7 +20,7 @@ const Dashboard = () => {
   const [modelPopup, setModelPopup] = useState(false);
 
   const getAllUsers = async () => {
-    const allusers = await axios.get("http://13.233.131.250:8000/users", {
+    const allusers = await api.get("/users", {
       headers: {
         Authorization: `bearer ${token}`,
       },
@@ -59,8 +59,8 @@ const Dashboard = () => {
   };
 
   const handleSubmit = async (values) => {
-    const response = await axios.post(
-      "http://13.233.131.250:8000/register",
+    const response = await api.post(
+      "/register",
       values,
       {
         headers: {
@@ -183,7 +183,6 @@ const Dashboard = () => {
               Add User
             </Button>
           </div>
-          {console.log(userData)}
           <TableComponent Userdata={userData} />
         </div>
       </Card>

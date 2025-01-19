@@ -3,10 +3,10 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import landingImage from "../../assets/rb_2744.png";
 import { TextField, Button, Typography } from "@mui/material";
-import axios, { Axios } from "axios";
 import { useNavigate } from "react-router-dom";
 import {jwtDecode} from 'jwt-decode';
 import { toast } from "react-toastify";
+import api from "../../config/AxiosCofig";
 
 const AuthPage = () => {
   // Form validation schema using Yup
@@ -25,7 +25,7 @@ const AuthPage = () => {
     validationSchema,
     onSubmit: async (values) => {
       try{
-        const authData = await axios.post("http://13.233.131.250:8000/login", values, {
+        const authData = await api.post("/login", values, {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
         });
         

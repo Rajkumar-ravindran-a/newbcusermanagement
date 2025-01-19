@@ -16,6 +16,7 @@ import {
 import axios from "axios";
 import { Typography } from "@mui/material";
 import AdminLayout from "../layouts/AdminLayout";
+import api from "../../config/AxiosCofig"
 
 const HomePage = () => {
   const [tradeData, setTradeData] = useState([]);
@@ -23,7 +24,7 @@ const HomePage = () => {
   const [userData, setUserData] = useState([]);
 
   const getAllUsers = async () => {
-    const allusers = await axios.get("http://13.233.131.250:8000/users", {
+    const allusers = await api.get("/users", {
       headers: {
         Authorization: `bearer ${token}`,
       },
@@ -34,7 +35,7 @@ const HomePage = () => {
   };
 
   const fetchTrade = async () => {
-    const tradeData = await axios.get("http://13.233.131.250:8000/getAllTrade", {
+    const tradeData = await api.get("/getAllTrade", {
       headers: {
         Authorization: `bearer ${token}`,
       },

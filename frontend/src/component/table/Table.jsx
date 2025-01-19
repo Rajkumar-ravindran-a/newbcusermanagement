@@ -3,65 +3,13 @@ import { CgMoreO } from "react-icons/cg";
 import { Pagination } from "@nextui-org/react";
 import { Input } from "@nextui-org/react";
 import { Typography } from "@mui/material";
+import { Avatar } from "@nextui-org/react";
 
 export const columns = [
   { name: "NAME", uid: "name" },
   { name: "ROLE", uid: "role" },
   { name: "STATUS", uid: "userStatus" },
   { name: "ACTIONS", uid: "actions" },
-];
-
-export const users = [
-  {
-    id: 1,
-    name: "Tony Reichert",
-    role: "Admin",
-    team: "Management",
-    status: "active",
-    age: "29",
-    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
-    email: "tony.reichert@example.com",
-  },
-  {
-    id: 2,
-    name: "Zoey Lang",
-    role: "user",
-    team: "Development",
-    status: "paused",
-    age: "25",
-    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-    email: "zoey.lang@example.com",
-  },
-  {
-    id: 3,
-    name: "Jane Fisher",
-    role: "user",
-    team: "Development",
-    status: "active",
-    age: "22",
-    avatar: "https://i.pravatar.cc/150?u=a04258114e29026702d",
-    email: "jane.fisher@example.com",
-  },
-  {
-    id: 4,
-    name: "William Howard",
-    role: "user",
-    team: "Marketing",
-    status: "deleted",
-    age: "28",
-    avatar: "https://i.pravatar.cc/150?u=a048581f4e29026701d",
-    email: "william.howard@example.com",
-  },
-  {
-    id: 5,
-    name: "Kristen Copper",
-    role: "user",
-    team: "Sales",
-    status: "active",
-    age: "24",
-    avatar: "https://i.pravatar.cc/150?u=a092581d4ef9026700d",
-    email: "kristen.cooper@example.com",
-  },
 ];
 
 const statusColorMap = {
@@ -79,7 +27,7 @@ const TableComponent = ({ Userdata }) => {
       case "name":
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
-            <img
+            {/* <img
               src={user.avatar}
               alt={user.firstName}
               style={{
@@ -88,7 +36,13 @@ const TableComponent = ({ Userdata }) => {
                 height: "40px",
                 marginRight: "10px",
               }}
+            /> */}
+            <Avatar
+              style={{ width: "40px", height: "40px", marginRight: "10px", fontSize:'1rem', fontWeight: "bold" }}
+              src={user.avatar}
+              name={user.firstName.charAt(0).toUpperCase()}
             />
+
             <div>
               <strong>{cellValue}</strong>
               <p style={{ margin: 0, fontSize: "0.8em", fontWeight: "500" }}>
@@ -163,6 +117,7 @@ const TableComponent = ({ Userdata }) => {
           width: "100%",
           borderCollapse: "collapse",
           marginBottom: "1.5rem",
+          minHeight: "17rem",
         }}
       >
         <thead>

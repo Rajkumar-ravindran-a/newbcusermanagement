@@ -67,14 +67,17 @@
     align-items: center;
     gap: 1rem;
     border-radius: 1rem;
-    border: 1px gray solid;
-    padding: 0.2rem 1rem;
+    color: color_variables.$text-primary !important;
+    border: 1px rgba(color_variables.$text-secondary, 0.3) solid;
+    font-style: normal !important;
+    padding: -0.4rem 0.3rem -0.4rem 0.3rem;
     .details-user{
       line-height: 18px;
       .details-user-name{
-        font-weight: 700;
+        font-weight: 600;
       }
       .details-user-role{
+        font-size: 0.9rem;
         color: color_variables.$text-secondary !important;
       }
     }
