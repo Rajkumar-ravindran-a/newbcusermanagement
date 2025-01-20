@@ -33,7 +33,7 @@ const AdminLayout = ({ children, pageTitle, pageSubtitle }) => {
               {pageSubtitle}
             </Typography>
           </div>
-          <Dropdown backdrop="blur">
+          <Dropdown>
             <DropdownTrigger>
               <Button className="profile-btn flex align-middle">
                 <div className="flex justify-evenly align-middle gap-2">

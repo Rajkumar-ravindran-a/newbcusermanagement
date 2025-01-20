@@ -66,8 +66,9 @@ const HomePage = () => {
       <Card className="p-2 mt-3">
         <div className="flex flex-col gap-4 flex-1">
           <div className="flex gap-2">
-            <Card className="flex-1 p-3">
+            <Card className="flex-1 p-3 border-none">
               <Table
+                removeWrapper
                 aria-label="Example table with client-side pagination"
                 bottomContent={
                   <div className="flex w-full justify-center">

@@ -1,0 +1,32 @@
+@use "../../color_variables.scss" as color_variables;
+
+.userMainCard {
+  .searchUser {
+    width: 30%;
+    
+    &:active {
+      border-color: color_variables.$primary-color-700;
+      outline-color: color_variables.$primary-color-700;
+    }
+    &.Mui-focused {
+      & fieldset {
+        border-color: color_variables.$primary-color-700 !important;
+        outline-color: color_variables.$primary-color-700 !important;
+      }
+    }
+    &:focus {
+      border-color: color_variables.$primary-color-700;
+      outline-color: color_variables.$primary-color-700;
+    }
+  }
+  .addUserButton {
+    color: color_variables.$white;
+    padding: 1.5rem;
+    background-color: color_variables.$primary-color-700;
+    outline-color: #fff !important;
+    border: none !important;
+    &:hover {
+      background-color: color_variables.$primary-color-600;
+    }
+  }
+}

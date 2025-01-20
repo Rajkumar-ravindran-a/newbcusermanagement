@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import MainPage from "../layouts/MainPage";
 import TableComponent from "../table/Table";
-import { Typography } from "@mui/material";
+import { TextField, Typography } from "@mui/material";
 import ModelPoper from "../Model";
-import { Input } from "@nextui-org/input";
 import { Formik, Field, Form, useFormikContext } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
@@ -11,6 +10,10 @@ import { Card, Select, SelectItem } from "@nextui-org/react";
 import { Button } from "@mui/material";
 import AdminLayout from "../layouts/AdminLayout";
 import api from "../../config/AxiosCofig";
+import { IoAddCircleOutline } from "react-icons/io5";
+import { Input } from "@nextui-org/react";
+import InputAdornment from "@mui/material/InputAdornment";
+import { IoSearch } from "react-icons/io5";
 
 const Dashboard = () => {
   const token = localStorage.getItem("token");
@@ -41,6 +44,7 @@ const Dashboard = () => {
       .email("Invalid email format")
       .required("Email is required"),
     role: Yup.string().required("Role is required"),
+    mobile: Yup.string().required("Mobile number is required"),
     password: Yup.string().required("Password is required"),
   });
 
@@ -51,6 +55,7 @@ const Dashboard = () => {
     email: "",
     role: "",
     password: "",
+    mobile: "",
   };
 
   const handleModelPopup = () => {
@@ -59,15 +64,11 @@ const Dashboard = () => {
   };
 
   const handleSubmit = async (values) => {
-    const response = await api.post(
-      "/register",
-      values,
-      {
-        headers: {
-          Authorization: `bearer ${token}`,
-        },
-      }
-    );
+    const response = await api.post("/register", values, {
+      headers: {
+        Authorization: `bearer ${token}`,
+      },
+    });
     console.log(response, "success");
     // resetForm()
     toast.success("User added successfully");
@@ -130,6 +131,17 @@ const Dashboard = () => {
               </div>
               <div className="mb-3">
                 <Field
+                  name="mobile"
+                  as={Input}
+                  label="Phone Number"
+                  placeholder="Enter Phone Number"
+                />
+                {touched.mobile && errors.mobile && (
+                  <div className="text-red-500 text-sm">{errors.mobile}</div>
+                )}
+              </div>
+              <div className="mb-3">
+                <Field
                   name="role"
                   as={Select}
                   label="Role"
@@ -169,18 +181,30 @@ const Dashboard = () => {
           )}
         </Formik>
       </ModelPoper>
-      <Card className="p-3 mt-4">
+      <Card className="p-3 mt-4 userMainCard">
         <div className="flex flex-col flex-1">
           <div className="flex space-between ">
             {/* <Typography variant="h5" className="mb-4">
               Users
             </Typography> */}
+            <TextField
+              className="searchUser"
+              placeholder="Search"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <IoSearch />
+                  </InputAdornment>
+                ),
+              }}
+            />
             <Button
-              className="h-5 mb-4"
+              className="h-5 mb-4 addUserButton"
               onClick={() => handleModelPopup()}
               variant="outlined"
+              startIcon={<IoAddCircleOutline />}
             >
-              Add User
+              Add New Employee
             </Button>
           </div>
           <TableComponent Userdata={userData} />
