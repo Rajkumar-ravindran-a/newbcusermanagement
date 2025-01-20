@@ -1,35 +1,36 @@
 import React, { useEffect, useState } from "react";
-import MainPage from "../layouts/MainPage";
+import AdminLayout from "../layouts/AdminLayout";
 import TableComponent from "../table/Table";
-import { TextField, Typography } from "@mui/material";
+import { TextField, Typography, Button } from "@mui/material";
 import ModelPoper from "../Model";
-import { Formik, Field, Form, useFormikContext } from "formik";
+import { Formik, Field, Form } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import { Card, Select, SelectItem } from "@nextui-org/react";
-import { Button } from "@mui/material";
-import AdminLayout from "../layouts/AdminLayout";
 import api from "../../config/AxiosCofig";
-import { IoAddCircleOutline } from "react-icons/io5";
+import { IoAddCircleOutline, IoSearch } from "react-icons/io5";
 import { Input } from "@nextui-org/react";
 import InputAdornment from "@mui/material/InputAdornment";
-import { IoSearch } from "react-icons/io5";
+import { Card, Select, SelectItem } from "@nextui-org/react";
 
 const Dashboard = () => {
   const token = localStorage.getItem("token");
   const [userData, setUserData] = useState([]);
-  // const { resetForm } = useFormikContext();
-
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [modelPopup, setModelPopup] = useState(false);
 
+  // Fetch all users
   const getAllUsers = async () => {
-    const allusers = await api.get("/users", {
-      headers: {
-        Authorization: `bearer ${token}`,
-      },
-    });
-    if (allusers.status === 200) {
-      setUserData(allusers.data);
+    try {
+      const allusers = await api.get("/users", {
+        headers: {
+          Authorization: `bearer ${token}`,
+        },
+      });
+      if (allusers.status === 200) {
+        setUserData(allusers.data);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
     }
   };
 
@@ -37,6 +38,16 @@ const Dashboard = () => {
     getAllUsers();
   }, []);
 
+  // Filter users based on search query
+  const filteredUsers = userData.filter((user) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      user.firstName.toLowerCase().includes(query) ||
+      user.lastName.toLowerCase().includes(query)
+    );
+  });
+
+  // Validation schema for form
   const validationSchema = Yup.object({
     firstName: Yup.string().required("First Name is required"),
     lastName: Yup.string().required("Last Name is required"),
@@ -58,22 +69,28 @@ const Dashboard = () => {
     mobile: "",
   };
 
+  // Handle modal popup toggle
   const handleModelPopup = () => {
-    console.log("handleModelPopup", modelPopup);
     setModelPopup(!modelPopup);
   };
 
+  // Handle form submission
   const handleSubmit = async (values) => {
-    const response = await api.post("/register", values, {
-      headers: {
-        Authorization: `bearer ${token}`,
-      },
-    });
-    console.log(response, "success");
-    // resetForm()
-    toast.success("User added successfully");
-    getAllUsers();
-    setModelPopup(!modelPopup);
+    try {
+      const response = await api.post("/register", values, {
+        headers: {
+          Authorization: `bearer ${token}`,
+        },
+      });
+      if (response.status === 201) {
+        toast.success("User added successfully");
+        getAllUsers();
+        setModelPopup(false);
+      }
+    } catch (error) {
+      console.error("Error adding user:", error);
+      toast.error("Failed to add user");
+    }
   };
 
   return (
@@ -98,9 +115,7 @@ const Dashboard = () => {
                     placeholder="Enter First Name"
                   />
                   {touched.firstName && errors.firstName && (
-                    <div className="text-red-500 text-sm">
-                      {errors.firstName}
-                    </div>
+                    <div className="text-red-500 text-sm">{errors.firstName}</div>
                   )}
                 </div>
                 <div className="flex-1">
@@ -111,9 +126,7 @@ const Dashboard = () => {
                     placeholder="Enter Last Name"
                   />
                   {touched.lastName && errors.lastName && (
-                    <div className="text-red-500 text-sm">
-                      {errors.lastName}
-                    </div>
+                    <div className="text-red-500 text-sm">{errors.lastName}</div>
                   )}
                 </div>
               </div>
@@ -183,13 +196,12 @@ const Dashboard = () => {
       </ModelPoper>
       <Card className="p-3 mt-4 userMainCard">
         <div className="flex flex-col flex-1">
-          <div className="flex space-between ">
-            {/* <Typography variant="h5" className="mb-4">
-              Users
-            </Typography> */}
+          <div className="flex justify-between">
             <TextField
               className="searchUser"
               placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -207,7 +219,7 @@ const Dashboard = () => {
               Add New Employee
             </Button>
           </div>
-          <TableComponent Userdata={userData} />
+          <TableComponent Userdata={filteredUsers} />
         </div>
       </Card>
     </AdminLayout>
