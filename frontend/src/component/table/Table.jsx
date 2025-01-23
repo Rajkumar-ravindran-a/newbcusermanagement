@@ -1,170 +1,182 @@
-import React, { useState, useCallback } from "react";
-import { CgMoreO } from "react-icons/cg";
-import { Pagination } from "@nextui-org/react";
-import { Input } from "@nextui-org/react";
-import { Typography } from "@mui/material";
-import { Avatar } from "@nextui-org/react";
-
-export const columns = [
-  { name: "NAME", uid: "name" },
-  { name: "ROLE", uid: "role" },
-  { name: "STATUS", uid: "userStatus" },
-  { name: "ACTIONS", uid: "actions" },
-];
+import React, { useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Avatar,
+  Button,
+  Pagination,
+  Typography,
+  TextField,
+  Paper,
+} from "@mui/material";
 
 const statusColorMap = {
-  Active: "green",
-  paused: "orange",
-  deleted: "red",
+  Active: "success",
+  paused: "warning",
+  deleted: "error",
 };
 
+export const columns = [
+  { name: "User ID", key: "id" },
+  { name: "NAME", key: "name" },
+  { name: "ROLE", key: "role" },
+  { name: "STATUS", key: "userStatus" },
+  { name: "ACTIONS", key: "actions" },
+];
+
 const TableComponent = ({ Userdata }) => {
-  console.log(Userdata, "Userdata");
-  const renderCell = useCallback((user, columnKey) => {
-    const cellValue = user[columnKey];
+  console.log("userData", Userdata);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  // Pagination Logic
+  const startIndex = (page - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedData = Userdata.slice(startIndex, endIndex);
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
+  const renderCell = (user, columnKey) => {
+    const cellValue = user[columnKey] || "N/A";
 
     switch (columnKey) {
+      case "id":
+        return (
+          <div style={{ display: "flex", alignItems: "center", justifyContent:"center" }}>{user.id}</div>
+        );
+
       case "name":
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
-            {/* <img
+            <Avatar
               src={user.avatar}
               alt={user.firstName}
-              style={{
-                borderRadius: "50%",
-                width: "40px",
-                height: "40px",
-                marginRight: "10px",
-              }}
-            /> */}
-            <Avatar
-              style={{ width: "40px", height: "40px", marginRight: "10px", fontSize:'1rem', fontWeight: "bold" }}
-              src={user.avatar}
-              name={user.firstName.charAt(0).toUpperCase()}
-            />
-
+              style={{ marginRight: "10px" }}
+            >
+              {user.firstName?.charAt(0)?.toUpperCase() || ""}
+            </Avatar>
             <div>
-              <strong>{cellValue}</strong>
-              <p style={{ margin: 0, fontSize: "0.8em", fontWeight: "500" }}>
-                {user.firstName}
-              </p>
-              <p style={{ margin: 0, fontSize: "0.8em", color: "gray" }}>
+              <Typography variant="body1">
+                {user.firstName + " " + user.lastName}
+              </Typography>
+              <Typography variant="caption" color="textSecondary">
                 {user.email}
-              </p>
+              </Typography>
             </div>
           </div>
         );
       case "role":
         return (
           <div>
-            <p style={{ margin: 0 }}>{cellValue}</p>
-            <p style={{ margin: 0, fontSize: "0.8em", color: "gray" }}>
+            <Typography variant="body1">{cellValue}</Typography>
+            <Typography variant="body2" color="textSecondary">
               {user.team}
-            </p>
+            </Typography>
           </div>
         );
-      case "status":
+      case "userStatus":
         return (
-          <span
-            style={{
-              padding: "5px 10px",
-              borderRadius: "15px",
-              backgroundColor: statusColorMap[user.userStatus],
-              color: "white",
-              fontSize: "0.8em",
-            }}
+          <Typography
+            variant="body2"
+            color={
+              statusColorMap[user.userStatus] || "textSecondary"
+            } /* Color dynamically based on status */
           >
             {cellValue}
-          </span>
+          </Typography>
         );
       case "actions":
         return (
           <div style={{ display: "flex", gap: "10px" }}>
-            <button
-              title="Details"
-              style={{ cursor: "pointer", background: "none", border: "none" }}
-            >
-              👁️
-            </button>
-            <button
-              title="Edit"
-              style={{ cursor: "pointer", background: "none", border: "none" }}
-            >
-              ✏️
-            </button>
-            <button
-              title="Delete"
-              style={{
-                cursor: "pointer",
-                background: "none",
-                border: "none",
-                color: "red",
-              }}
-            >
-              🗑️
-            </button>
+            <Button variant="outlined" color="primary" size="small">
+              Details
+            </Button>
+            <Button variant="outlined" color="secondary" size="small">
+              Edit
+            </Button>
+            <Button variant="outlined" color="error" size="small">
+              Delete
+            </Button>
           </div>
         );
       default:
         return cellValue;
     }
-  }, []);
+  };
 
   return (
-    <div>
-      <table
+    <>
+      <TableContainer>
+        <Table sx={{ minHidth: "650px" }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              {columns.map((column) => (
+                <TableCell
+                  key={column.key}
+                  style={{ fontWeight: "bold", textTransform: "uppercase" }}
+                >
+                  {column.name}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedData.length > 0 ? (
+              paginatedData.map((user) => (
+                <TableRow key={user.id} hover>
+                  {columns.map((column) => (
+                    <TableCell key={column.key}>
+                      {renderCell(user, column.key)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  align="center"
+                  style={{ height: "200px" }}
+                >
+                  No data available
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <div
         style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          marginBottom: "1.5rem",
-          minHeight: "17rem",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: "16px",
         }}
       >
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th
-                key={column.uid}
-                style={{
-                  textAlign: "left",
-                  padding: "10px",
-                  borderBottom: "1px solid #ddd",
-                }}
-              >
-                {column.name}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {Userdata.map((user) => (
-            <tr key={user.id}>
-              {columns.map((column) => (
-                <td
-                  key={column.uid}
-                  style={{ padding: "10px", borderBottom: "1px solid #ddd" }}
-                >
-                  {renderCell(user, column.uid)}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="flex justify-between mt-6">
-        <div className="flex gap-3 align-middle ">
-          <Typography variant="subtitle1">Showing</Typography>
-          <Input classNames="offset-input w-1" style={{ width: "1.5rem" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <Typography variant="body2">Rows per page:</Typography>
+          <TextField
+            type="number"
+            value={rowsPerPage}
+            onChange={(e) => setRowsPerPage(parseInt(e.target.value, 10) || 5)}
+            style={{ width: "60px" }}
+            size="small"
+          />
         </div>
         <Pagination
-          loop
-          showControls
-          color="success"
-          initialPage={1}
-          total={5}
+          count={Math.ceil(Userdata.length / rowsPerPage)}
+          page={page}
+          onChange={handlePageChange}
+          color="primary"
         />
       </div>
-    </div>
+    </>
   );
 };
 

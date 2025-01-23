@@ -61,6 +61,7 @@ const HomePage = () => {
     const endIndex = startIndex + rowsPerPage;
     return tradeData.slice(startIndex, endIndex);
   }, [page, tradeData]);
+  
   return (
     <AdminLayout pageTitle="Dashboard" pageSubtitle="All details">
       <Card className="p-2 mt-3">

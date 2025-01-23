@@ -16,4 +16,10 @@
             background-color: color_variables.$primary-color-600;
         }
     }
+    .submit-btn{
+        padding: 1.5rem 2.5rem !important;
+        margin-top: 0.2rem;
+        color: color_variables.$white;
+        background-color: color_variables.$primary-color-600;
+    }
 }

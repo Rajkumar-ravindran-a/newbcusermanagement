@@ -9,7 +9,7 @@ from typing import Optional, List
 from models.userModel import TradeData, Users, userRole, Status, Brokers
 from config.dbconnection import sessionLocal
 from sqlalchemy.orm import Session
-from sqlalchemy import exc
+from sqlalchemy import exc,  desc
 from sqlalchemy.future import select
 from config.dbconnection import engine, base
 
@@ -91,6 +91,7 @@ class UserCreate(BaseModel):
     firstName: str
     lastName: Optional[str] = None
     email: EmailStr
+    phoneNumber: Optional[str] = None
     password: str
     role: Optional[int] = 2  # Default role
     userStatus: Optional[int] = 1  # Default user status
@@ -173,6 +174,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         email=user.email,
         pwd=hashed_password,
         role=user.role,
+        phoneNumber=user.phoneNumber,
         userStatus=user.userStatus,
         createAt=datetime.now(),
         updatedAt=datetime.now(),
@@ -343,10 +345,14 @@ async def createBreak(response: dict, db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user)):
     if(current_user.role != 1):
         HTTPException(status_code=500, detail="unAuthorized")
+        
+    print(response)
+    
     createBrocker = Brokers(
-        brokerId = response["brokerId"],
         brokerName = response["brokerName"],
-        fundAllocated = response["fundAllocated"],
+        grossfund = response["grossFund"],
+        arbitragefund = response["arbitrageFund"],
+        propfund = response["propFund"]
     )
     try:
         db.add(createBrocker)
@@ -367,23 +373,25 @@ async def getBroker(status:Optional[int] = None, db: Session = Depends(get_db),
         if status is None:
             brokerData = db.query(Brokers).all()
         else:
-            brokerData = db.query(Brokers).filter(Brokers.brokerStatus == status).all()
+            brokerData = db.query(Brokers).filter(Brokers.brokerStatus == status).order_by(desc(Brokers.createAt)).all()
         outPut = []
         for datas in brokerData:
             outPut.append({
                 "id": datas.id,
-                "brokerId":datas.brokerId,
                 "brokerName":datas.brokerName,
-                "fundAllocated":datas.fundAllocated,
-                "startDate": datas.createAt,
+                "grossfund" : datas.grossfund,
+                "arbitragefund" : datas.arbitragefund,
+                "propfund" : datas.propfund,
+                "startDate": datas.createAt.strftime("%Y-%m-%d %H:%M:%S"),
                 "status":datas.brokerStatus,
-                "releaseDate": datas.releaseDate if datas.releaseDate else None,
+                "releaseDate": datas.releaseDate.strftime("%Y-%m-%d %H:%M:%S") if datas.releaseDate else None,
             })
         return {'message': 'Brokers fetched successfully', "data": outPut}
     
     except Exception as e:
         print("error in getBrokerApi", e)
         return {"message": "Internal server error"}
+    
     
     
 @app.put('/releaseBroker/{id}/{status}')

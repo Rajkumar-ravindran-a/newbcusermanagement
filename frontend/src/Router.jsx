@@ -8,7 +8,8 @@ const DataManagementPage = lazy(() =>
   import("./component/pages/DataManagement.jsx")
 );
 const HomePage = lazy(() => import("./component/pages/HomePage.jsx"));
-const SettingsPage = lazy(() => import("./component/pages/SettingsPage.jsx"));
+const BrokerPage = lazy(() => import("./component/pages/SettingsPage.jsx"));
+const IdPage = lazy(() => import("./component/pages/IdPage.jsx"));
 
 const AppRoutes = () => {
   const token = localStorage.getItem("token");
@@ -92,10 +93,18 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/settings"
+        path="/brokers"
         element={
           <Suspense fallback={<div>Loading.....</div>}>
-            <SettingsPage />
+            <BrokerPage />
+          </Suspense>
+        }
+      />
+       <Route
+        path="/ids"
+        element={
+          <Suspense fallback={<div>Loading.....</div>}>
+            <IdPage />
           </Suspense>
         }
       />

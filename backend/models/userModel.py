@@ -8,9 +8,10 @@ base = base
 class Brokers(base):
     __tablename__ = 'brokers'
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    brokerId = Column(Integer, primary_key=True, index=True)
     brokerName = Column(String(50), nullable=False)
-    fundAllocated = Column(Integer, nullable=True, index=True)
+    grossfund = Column(Integer)
+    arbitragefund = Column(Integer)
+    propfund = Column(Integer)
     brokerStatus = Column(Integer,  ForeignKey("status.id"), nullable=False, default=1)
     releaseDate = Column(DateTime, nullable=True)
     createAt = Column(DateTime, index=True, default=datetime.now)
@@ -35,6 +36,7 @@ class Users(base):
     firstName = Column(String(100), index=True, nullable=False)
     lastName = Column(String(100), index=True, nullable=True)
     email = Column(String(200), unique=True, index=True, nullable=False)
+    phonenumber = Column(String(50), index=True, nullable=True)
     role = Column(
         Integer,
         ForeignKey("userRole.id"),

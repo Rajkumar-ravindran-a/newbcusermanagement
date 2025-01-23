@@ -181,7 +181,7 @@ const Dashboard = () => {
               <div className="mt-4 flex gap-4">
                 <Button
                   type="submit"
-                  className="mr-3 Btn-primary"
+                  className="mr-3 submit-btn"
                   variant="contained"
                 >
                   Add User
@@ -219,6 +219,7 @@ const Dashboard = () => {
               Add New Employee
             </Button>
           </div>
+          {console.log(filteredUsers)}
           <TableComponent Userdata={filteredUsers} />
         </div>
       </Card>

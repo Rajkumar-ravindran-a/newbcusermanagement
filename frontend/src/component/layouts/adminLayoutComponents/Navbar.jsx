@@ -4,6 +4,8 @@ import { FaUsers } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import { RiStockFill } from "react-icons/ri";
+import { TiDocumentText } from "react-icons/ti";
 
 const Navbar = () => {
   const location = useLocation();
@@ -45,12 +47,21 @@ const Navbar = () => {
           </li>
           <li
             className={
-              activePage === "/settings" ? "active navmenuitem" : "navmenuitem"
+              activePage === "/brokers" ? "active navmenuitem" : "navmenuitem"
             }
-            onClick={() => handleNavigation("/settings")}
+            onClick={() => handleNavigation("/brokers")}
           >
-            <IoSettingsOutline className="listIcons" />
-            Settings
+            <RiStockFill className="listIcons" />
+            Brokers
+          </li>
+          <li
+            className={
+              activePage === "/ids" ? "active navmenuitem" : "navmenuitem"
+            }
+            onClick={() => handleNavigation("/ids")}
+          >
+            <TiDocumentText className="listIcons" />
+            Id
           </li>
         </ul>
       </div>

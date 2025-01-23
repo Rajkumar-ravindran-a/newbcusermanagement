@@ -5,5 +5,17 @@
   .table-row{
     font-weight: 300 !important;
     color: color_variables.$text-secondary;
+    
   }
+  .middle-noData{
+    align-items: center !important;
+    text-align: center;
+    color: rgba(color_variables.$dark-20, 0.5);
+  }
+  .submit-btn{
+    padding: 1.5rem 2.5rem !important;
+    margin-top: 0.2rem;
+    color: color_variables.$white;
+    background-color: color_variables.$primary-color-600;
+}
 }
