@@ -8,13 +8,19 @@ import api from "../../config/AxiosCofig.js";
 import { toast } from "react-toastify";
 import { Card } from "@nextui-org/react";
 import { Button } from "@nextui-org/react";
-import { IoAddCircleOutline, IoSearch } from "react-icons/io5";
+import { IoSearch } from "react-icons/io5";
 import InputAdornment from "@mui/material/InputAdornment";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import FormHelperText from "@mui/material/FormHelperText";
+import { data } from "react-router-dom";
+
 // Validation Schema
 const brokerValidationSchema = Yup.object().shape({
   brokerName: Yup.string().required("Broker Name is required"),
-  id: Yup.string()
-    .required("ID is required"),
+  id: Yup.string().required("ID is required"),
   startDate: Yup.date().required("Start Date is required"),
   employee: Yup.string().required("employee is required"),
   nism: Yup.string().required("nism is required"),
@@ -27,7 +33,7 @@ const brokerTableTitle = [
   "Broker Name",
   "Start Date",
   "Releases Date",
-  "Funds Fund",
+  // "Funds Fund",
   "Employee",
   "Nism",
   "IdType",
@@ -37,37 +43,73 @@ const brokerTableTitle = [
 const AdminSettings = () => {
   const [brokerData, setBrokerData] = useState([]);
   const [open, setOpen] = useState(false); // Modal open state
+  const [getUserList, setGetuserList] = useState([]);
+  const [idData, setIdData] = useState([]);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  // Fetch User Data
+  const getuserData = async () => {
+    try {
+      const response = await api.get("/users");
+      if (response.status === 200) {
+        setGetuserList(response.data);
+      } else {
+        console.log("error in getUserData");
+        setGetuserList([]);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error fetching user data.");
+    }
+  };
+
+  const getIdData = async () => {
+    try {
+      const response = await api.get("/getIds");
+      if (response.status === 200) {
+        console.log(response.data);
+        const structureData = response.data.data.map((data) => ({
+          Id: data.idNumber,
+          "Broker Name": data.brokerName,
+          "Start Date": data.startDate,
+          "Releases Date": data.releasesDate ? data.releasesDate : "-",
+          Employee: data?.employee ? data.employee : "-",
+          Nism: data.nism,
+          IdType: data.idType,
+          Action: (
+            <div className="action-buttons">
+              <Button
+                // key={`release-${broker.id}`}
+                // onPress={() => releaseBroker(broker)}
+                size="small"
+                className="submit-btn"
+                // isDisabled={broker.status === 3}
+              >
+                {/* {broker.status === 3 ? "Released" : "Release"} */}
+                Release
+              </Button>
+            </div>
+          ),
+        }));
+        setIdData(structureData);
+      } else {
+        console.log("error in getIdData");
+        setIdData([]);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Error fetching id data.");
+    }
+  };
 
   // Fetch Brokers Data
   const getBrokerData = async () => {
     try {
       const response = await api.get("/getAllBroker");
       if (response.status === 200) {
-        const formattedData = response?.data?.data.map((broker) => ({
-          "Broker Name": broker.brokerName,
-          "Start Date": broker.startDate || "N/A",
-          "Release Date": broker.releaseDate || "N/A",
-          "Gross Fund": broker.grossFund || "-",
-          "Arbitrage Fund": broker.arbitrage || "-",
-          "Additional Field 1": broker.additionalField1 || "N/A",
-          "Additional Field 2": broker.additionalField2 || "N/A",
-          "Total Fund": broker.grossFund + broker.arbitrage || "-",
-          Action: (
-            <div key={`action-${broker.id}`} className="action-buttons">
-              <Button
-                key={`release-${broker.id}`}
-                onPress={() => releaseBroker(broker)}
-                disabled={broker.status === 3}
-              >
-                {broker.status === 3 ? "Released" : "Release"}
-              </Button>
-            </div>
-          ),
-        }));
-        setBrokerData([]);
+        setBrokerData(response?.data?.data.filter((data) => data.status === 1));
       }
     } catch (error) {
       console.error(error);
@@ -91,6 +133,8 @@ const AdminSettings = () => {
 
   useEffect(() => {
     getBrokerData();
+    getuserData();
+    getIdData();
   }, []);
 
   // Form Initial Values
@@ -106,9 +150,9 @@ const AdminSettings = () => {
   // Form Submission Handler
   const handleSubmit = async (values, { resetForm }) => {
     try {
-      const response = await api.post("/createBroker", values);
+      const response = await api.post("/createId", values);
       if (response.status === 200) {
-        toast.success("Broker added successfully.");
+        toast.success("Id added successfully.");
         getBrokerData();
         resetForm();
         handleClose(); // Close modal after successful submission
@@ -124,7 +168,7 @@ const AdminSettings = () => {
       pageTitle="Id Management"
       pageSubtitle="Manage Id details, map brokers"
     >
-      <Card classNames="settings-mainCard" style={{marginTop:'1rem'}}>
+      <Card classNames="settings-mainCard" style={{ marginTop: "1rem" }}>
         <div className="flex justify-between p-4 align-middle broker-form">
           <TextField
             className="searchUser"
@@ -179,17 +223,32 @@ const AdminSettings = () => {
                       error={touched.id && Boolean(errors.id)}
                       helperText={touched.id && errors.id}
                     />
-                    <TextField
+                    <FormControl
                       fullWidth
                       margin="normal"
-                      name="brokerName"
-                      label="Broker Name"
-                      value={values.brokerName || ""}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
                       error={touched.brokerName && Boolean(errors.brokerName)}
-                      helperText={touched.brokerName && errors.brokerName}
-                    />
+                    >
+                      <InputLabel id="brokerName-label">Broker Name</InputLabel>
+                      <Select
+                        labelId="brokerName-label"
+                        id="brokerName"
+                        name="brokerName"
+                        label="Broker Name"
+                        value={values.brokerName || ""}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                      >
+                        {brokerData &&
+                          brokerData.map((data, index) => (
+                            <MenuItem key={index} value={data.id}>
+                              {data.brokerName}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                      {touched.brokerName && Boolean(errors.brokerName) && (
+                        <FormHelperText>{errors.brokerName}</FormHelperText>
+                      )}
+                    </FormControl>
                   </div>
                   <div className="flex gap-2">
                     <TextField
@@ -205,17 +264,33 @@ const AdminSettings = () => {
                       error={touched.startDate && Boolean(errors.startDate)}
                       helperText={touched.startDate && errors.startDate}
                     />
-                    <TextField
+                    <FormControl
                       fullWidth
                       margin="normal"
-                      name="employee"
-                      label="Employee"
-                      value={values.arbitrage || ""}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
                       error={touched.employee && Boolean(errors.employee)}
-                      helperText={touched.employee && errors.employee}
-                    />
+                    >
+                      <InputLabel id="employee-label">Employee</InputLabel>
+                      <Select
+                        labelId="employee-label"
+                        id="employee"
+                        name="employee"
+                        label="Employee"
+                        value={values.employee || ""}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                      >
+                        {console.log(getUserList)}
+                        {getUserList &&
+                          getUserList.map((data, index) => (
+                            <MenuItem key={index} value={data.id}>
+                              {data.firstName + " " + data.lastName}
+                            </MenuItem>
+                          ))}
+                      </Select>
+                      {touched.employee && errors.employee && (
+                        <FormHelperText>{errors.employee}</FormHelperText>
+                      )}
+                    </FormControl>
                   </div>
                   <div>
                     <TextField
@@ -226,13 +301,8 @@ const AdminSettings = () => {
                       value={values.nism || ""}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      error={
-                        touched.nism &&
-                        Boolean(errors.nism)
-                      }
-                      helperText={
-                        touched.nism && errors.nism
-                      }
+                      error={touched.nism && Boolean(errors.nism)}
+                      helperText={touched.nism && errors.nism}
                     />
                     <TextField
                       fullWidth
@@ -242,13 +312,8 @@ const AdminSettings = () => {
                       value={values.idType || ""}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      error={
-                        touched.idType &&
-                        Boolean(errors.idType)
-                      }
-                      helperText={
-                        touched.idType && errors.idType
-                      }
+                      error={touched.idType && Boolean(errors.idType)}
+                      helperText={touched.idType && errors.idType}
                     />
                   </div>
 
@@ -257,7 +322,7 @@ const AdminSettings = () => {
                       display: "flex",
                       justifyContent: "flex-end",
                       marginTop: 2,
-                      gap:2
+                      gap: 2,
                     }}
                   >
                     <Button type="button" onPress={handleClose}>
@@ -273,7 +338,7 @@ const AdminSettings = () => {
 
         {/* Broker Table */}
         <Box sx={{ marginTop: 4 }}>
-          <CustomTable title={brokerTableTitle} tableData={brokerData} />
+          <CustomTable title={brokerTableTitle} tableData={idData} />
         </Box>
       </Card>
     </AdminLayout>

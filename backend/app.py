@@ -4,18 +4,19 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Optional, List
-from models.userModel import TradeData, Users, userRole, Status, Brokers
+from models.userModel import TradeData, Users, userRole, Status, Brokers, Ids
 from config.dbconnection import sessionLocal
 from sqlalchemy.orm import Session
-from sqlalchemy import exc,  desc
+from sqlalchemy import exc, desc
 from sqlalchemy.future import select
 from config.dbconnection import engine, base
 
 
 # Initialize the FastAPI app
 app = FastAPI()
+
 
 def get_db():
     db = sessionLocal()
@@ -29,7 +30,7 @@ def get_db():
 async def createTable(session: Session = Depends(get_db)):
     base.metadata.create_all(bind=engine)
     print("Created table successfully")
-    
+
 
 # JWT configuration
 SECRET_KEY = "your_secret_key"  # Replace with a strong secret key
@@ -41,7 +42,7 @@ origins = [
     "http://localhost:3000",  # Replace with your frontend URL, e.g., React app
     "https://yourfrontenddomain.com",
     "http://localhost:5173",
-    "*"
+    "*",
     # Another domain that needs access
     # You can add more origins here as needed
 ]
@@ -60,8 +61,6 @@ pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
 
 
 def get_current_user(
@@ -98,6 +97,16 @@ class UserCreate(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class CreateIdRequest(BaseModel):
+    id: int
+    brokerName: int
+    employee: int
+    idType: str
+    nism: str | None = None  # Optional field
+    startDate: date
+    releaseDate: date | None = None  # Optional field
 
 
 class TradeDataRequest(BaseModel):
@@ -154,9 +163,11 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 # API Endpoints
 
-@app.get('/')
+
+@app.get("/")
 def root():
     return {"message": "Welcome to the API"}
+
 
 @app.post("/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -206,10 +217,15 @@ def login_user(
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-        
+
     # Create the JWT token
     access_token = create_access_token(
-        data={"email": user.email, "role": user.role, "userId": user.id, "fullName": user.firstName }
+        data={
+            "email": user.email,
+            "role": user.role,
+            "userId": user.id,
+            "fullName": user.firstName,
+        }
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -246,10 +262,12 @@ async def create_trade(
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-@app.get("/getAllTrade")
-def getAllTrade(db: Session = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user)):
 
+@app.get("/getAllTrade")
+def getAllTrade(
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
     """
     Fetch all trade data from the database.
     This is a protected route that requires JWT token to access.
@@ -275,10 +293,12 @@ def getAllTrade(db: Session = Depends(get_db),
     except exc.SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail="Database error occurred")
 
+
 @app.get("/getTrade")
-def getTradeById(db: Session = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user)):
-    
+def getTradeById(
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
     """
     Fetch trade data for a specific user from the database.
     This is a protected route that requires JWT token to access.
@@ -303,7 +323,8 @@ def getTradeById(db: Session = Depends(get_db),
         return outPut
     except exc.SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail="Database error occurred")
-    
+
+
 @app.get("/users", response_model=List[UserResponse])
 async def get_users(
     db: Session = Depends(get_db),
@@ -340,24 +361,28 @@ async def get_users(
     except exc.SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail="Database error occurred")
 
+
 @app.post("/createBroker")
-async def createBreak(response: dict, db: Session = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user)):
-    if(current_user.role != 1):
+async def createBreak(
+    response: dict,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    if current_user.role != 1:
         HTTPException(status_code=500, detail="unAuthorized")
-        
+
     print(response)
-    
+
     createBrocker = Brokers(
-        brokerName = response["brokerName"],
-        grossfund = response["grossFund"],
-        arbitragefund = response["arbitrageFund"],
-        propfund = response["propFund"]
+        brokerName=response["brokerName"],
+        grossfund=response["grossFund"],
+        arbitragefund=response["arbitrageFund"],
+        propfund=response["propFund"],
     )
     try:
         db.add(createBrocker)
         db.commit()
-        return {'message': 'Brokers created successfully'}
+        return {"message": "Brokers created successfully"}
     except exc.SQLAlchemyError as e:
         db.rollback()
         print("Error", e)
@@ -365,60 +390,157 @@ async def createBreak(response: dict, db: Session = Depends(get_db),
     except Exception as err:
         print("Error", err)
         raise HTTPException(status_code=500, detail="internal server error")
-    
-@app.get('/getAllBroker')
-async def getBroker(status:Optional[int] = None, db: Session = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_user)):
+
+
+@app.post("/createId")
+async def createId(
+    response: CreateIdRequest,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    if current_user.role != 1:
+        HTTPException(status_code=500, detail="unAuthorized")
+
+    print(response)
+
+    createId = Ids(
+        idNumber=response.id,
+        brokerId=response.brokerName,
+        emloyeeId=response.employee,
+        idType=response.idType,
+        nism=response.nism,
+        startDate=response.startDate,
+        releaseDate=response.releaseDate,
+    )
+    try:
+        db.add(createId)
+        db.commit()
+        return {"message": "Ids created successfully"}
+    except exc.SQLAlchemyError as e:
+        db.rollback()
+        print("Error", e)
+        raise HTTPException(status_code=500, detail="Database error")
+    except Exception as err:
+        print("Error", err)
+        raise HTTPException(status_code=500, detail="internal server error")
+
+
+@app.get("/getIds")
+async def get_ids(
+    broker_id: int | None = None,  # Optional query parameter
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    # Authorization check
+    if current_user.role != 1:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    try:
+        # Fetch IDs with optional filtering
+        if broker_id:
+            results = db.query(Ids).filter(Ids.brokerId == broker_id).all()
+        else:
+            results = (
+                db.query(Ids, Brokers)
+                .outerjoin(Brokers, Brokers.id == Ids.brokerId)
+                .all()
+            )
+
+        ids = [
+            {
+                "idNumber": id_record.idNumber,
+                "brokerId": id_record.brokerId,
+                "brokerName": broker_record.brokerName if broker_record else None,
+                # "employeeId": id_record.employeeId,
+                "idType": id_record.idType,
+                "nism": id_record.nism,
+                "startDate": id_record.startDate,
+                "releaseDate": id_record.releaseDate,
+            }
+            for id_record, broker_record in results
+        ]
+
+        # Return the result
+        if not ids:
+            raise HTTPException(status_code=404, detail="No IDs found")
+        return {"data": ids}
+    except Exception as err:
+        print("Error:", err)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/getAllBroker")
+async def getBroker(
+    status: Optional[int] = None,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
     try:
         if status is None:
             brokerData = db.query(Brokers).all()
         else:
-            brokerData = db.query(Brokers).filter(Brokers.brokerStatus == status).order_by(desc(Brokers.createAt)).all()
+            brokerData = (
+                db.query(Brokers)
+                .filter(Brokers.brokerStatus == status)
+                .order_by(desc(Brokers.createAt))
+                .all()
+            )
         outPut = []
         for datas in brokerData:
-            outPut.append({
-                "id": datas.id,
-                "brokerName":datas.brokerName,
-                "grossfund" : datas.grossfund,
-                "arbitragefund" : datas.arbitragefund,
-                "propfund" : datas.propfund,
-                "startDate": datas.createAt.strftime("%Y-%m-%d %H:%M:%S"),
-                "status":datas.brokerStatus,
-                "releaseDate": datas.releaseDate.strftime("%Y-%m-%d %H:%M:%S") if datas.releaseDate else None,
-            })
-        return {'message': 'Brokers fetched successfully', "data": outPut}
-    
+            outPut.append(
+                {
+                    "id": datas.id,
+                    "brokerName": datas.brokerName,
+                    "grossfund": datas.grossfund,
+                    "arbitragefund": datas.arbitragefund,
+                    "propfund": datas.propfund,
+                    "startDate": datas.createAt.strftime("%Y-%m-%d %H:%M:%S"),
+                    "status": datas.brokerStatus,
+                    "releaseDate": (
+                        datas.releaseDate.strftime("%Y-%m-%d %H:%M:%S")
+                        if datas.releaseDate
+                        else None
+                    ),
+                }
+            )
+        return {"message": "Brokers fetched successfully", "data": outPut}
+
     except Exception as e:
         print("error in getBrokerApi", e)
         return {"message": "Internal server error"}
-    
-    
-    
-@app.put('/releaseBroker/{id}/{status}')
-async def relaseBroker(id: int, status: int, db: Session = Depends(get_db), current_user: UserResponse = Depends(get_current_user)):
+
+
+@app.put("/releaseBroker/{id}/{status}")
+async def relaseBroker(
+    id: int,
+    status: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
     try:
         brokerData = db.query(Brokers).filter(Brokers.id == id).first()
-        
+
         if brokerData is None:
             raise HTTPException(status_code=404, detail="Broker not found")
-        
+
         print(status)
-        
+
         brokerData.brokerStatus = status
-        brokerData.releaseDate = datetime.now()     
+        brokerData.releaseDate = datetime.now()
         brokerData.updatedAt = datetime.now()
-        
+
         db.commit()
-        
-        return{"message": "Broker relase Successfully"}
-            
+
+        return {"message": "Broker relase Successfully"}
+
     except Exception as e:
         print("error in relaseBroker", e)
         raise HTTPException(status_code=500, details="Internal server error")
-    
 
-class StrategyDataIn(BaseModel): 
-    stratagyData: dict 
-    
-class StrategyDataOut(StrategyDataIn): 
+
+class StrategyDataIn(BaseModel):
+    stratagyData: dict
+
+
+class StrategyDataOut(StrategyDataIn):
     id: int

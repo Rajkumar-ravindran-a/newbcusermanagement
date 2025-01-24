@@ -16,6 +16,21 @@ class Brokers(base):
     releaseDate = Column(DateTime, nullable=True)
     createAt = Column(DateTime, index=True, default=datetime.now)
     updatedAt = Column(DateTime, index=True, default=datetime.now)
+    
+class Ids(base):
+    __tablename__ = "ids"
+    recordId = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    idNumber = Column(String(50), unique=True, index=True, nullable=False)
+    brokerId = Column(Integer, nullable=False)
+    emloyeeId = Column(Integer, ForeignKey("users.id"), nullable=False)
+    idType = Column(String(50), nullable=False)
+    nism = Column(Integer, nullable=False)
+    idStatus = Column(Integer, ForeignKey("status.id"), nullable=False, default=1)
+    startDate = Column(DateTime, nullable=False)
+    releaseDate = Column(DateTime, nullable=True)
+    createAt = Column(DateTime, index=True, default=datetime.now)
+    updatedAt = Column(DateTime, index=True, default=datetime.now)
+
 
 
 class userRole(base):

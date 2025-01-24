@@ -43,7 +43,7 @@ const Navbar = () => {
             }
             onClick={() => handleNavigation("/dashboard")}
           >
-            <FaUsers className="listIcons" /> All Employees
+            <FaUsers className="listIcons" />Employees
           </li>
           <li
             className={
