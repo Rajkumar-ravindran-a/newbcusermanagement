@@ -30,6 +30,26 @@ def get_db():
 async def createTable(session: Session = Depends(get_db)):
     base.metadata.create_all(bind=engine)
     print("Created table successfully")
+    with engine.begin() as conn:
+        with Session(bind=conn) as session:
+            # Insert initial data
+            status_count = (session.execute(select(Status))).scalars().all()
+            if not status_count:
+                statusData = ["Active", "Deactive", "Released"]
+                for status in statusData:
+                    statusDatacommit = Status(statusName=status)
+                    session.add(statusDatacommit)
+                session.commit()
+                print("Status data inserted successfully")
+            role_count = (session.execute(select(userRole))).scalars().all()
+            if not role_count:
+                # Insert initial data
+                roleData = ["Admin", "Employee"]
+                for role in roleData:
+                    roleDatacommit = userRole(roleName=role)
+                    session.add(roleDatacommit)
+                session.commit()
+                print("Role data inserted successfully")
 
 
 # JWT configuration
@@ -90,7 +110,7 @@ class UserCreate(BaseModel):
     firstName: str
     lastName: Optional[str] = None
     email: EmailStr
-    phoneNumber: Optional[str] = None
+    phonenumber: Optional[str] = None
     password: str
     role: Optional[int] = 2  # Default role
     userStatus: Optional[int] = 1  # Default user status
@@ -104,7 +124,7 @@ class CreateIdRequest(BaseModel):
     brokerName: int
     employee: int
     idType: str
-    nism: str | None = None  # Optional field
+    nism: int | None = None  # Optional field
     startDate: date
     releaseDate: date | None = None  # Optional field
 
@@ -185,7 +205,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         email=user.email,
         pwd=hashed_password,
         role=user.role,
-        phoneNumber=user.phoneNumber,
+        phonenumber=user.phonenumber,
         userStatus=user.userStatus,
         createAt=datetime.now(),
         updatedAt=datetime.now(),
@@ -424,6 +444,41 @@ async def createId(
         print("Error", err)
         raise HTTPException(status_code=500, detail="internal server error")
 
+@app.put("/updateId/{record_id}")
+async def update_id(
+    record_id: int,
+    response: CreateIdRequest,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    if current_user.role != 1:
+        raise HTTPException(status_code=403, detail="Unauthorized access")
+
+    # Fetch existing record
+    existing_record = db.query(Ids).filter(Ids.recordId == record_id).first()
+    
+    if not existing_record:
+        raise HTTPException(status_code=404, detail="ID record not found")
+
+    # Update fields
+    existing_record.idNumber = response.id
+    existing_record.brokerId = response.brokerName
+    existing_record.employeeId = response.employee  # Fixed typo
+    existing_record.idType = response.idType
+    existing_record.nism = response.nism
+    existing_record.startDate = response.startDate
+    existing_record.releaseDate = response.releaseDate  # Ensure consistency
+
+    try:
+        db.add(existing_record)
+        db.commit()
+        db.refresh(existing_record)
+        return {"message": "ID updated successfully"}
+    except exc.SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(err)}")
 
 @app.get("/getIds")
 async def get_ids(
@@ -446,23 +501,25 @@ async def get_ids(
                 .all()
             )
 
+        if not results:
+            return {"status_code": 404, "detail": "No IDs found"}
+
         ids = [
             {
                 "idNumber": id_record.idNumber,
+                "recordId": id_record.recordId,
                 "brokerId": id_record.brokerId,
                 "brokerName": broker_record.brokerName if broker_record else None,
-                # "employeeId": id_record.employeeId,
+                "employeeId": id_record.emloyeeId,
                 "idType": id_record.idType,
                 "nism": id_record.nism,
+                "status": id_record.idStatus,
                 "startDate": id_record.startDate,
                 "releaseDate": id_record.releaseDate,
             }
             for id_record, broker_record in results
         ]
 
-        # Return the result
-        if not ids:
-            raise HTTPException(status_code=404, detail="No IDs found")
         return {"data": ids}
     except Exception as err:
         print("Error:", err)
@@ -536,6 +593,32 @@ async def relaseBroker(
     except Exception as e:
         print("error in relaseBroker", e)
         raise HTTPException(status_code=500, details="Internal server error")
+
+
+@app.put("/releaseId/{id}/{status}")
+async def relaseId(
+    id: int,
+    status: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    try:
+        idData = db.query(Ids).filter(Ids.recordId == id).first()
+
+        if idData is None:
+            return {"status": 404, "detail": "Id not found"}
+
+        idData.idStatus = status
+        idData.releaseDate = datetime.now()
+        idData.updatedAt = datetime.now()
+
+        db.commit()
+
+        return {"message": "Id relase Successfully"}
+
+    except Exception as e:
+        print("error in relaseId", e)
+        return {"status":500, "details":"Internal server error"}
 
 
 class StrategyDataIn(BaseModel):

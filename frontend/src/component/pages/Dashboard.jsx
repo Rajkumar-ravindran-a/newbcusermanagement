@@ -55,7 +55,7 @@ const Dashboard = () => {
       .email("Invalid email format")
       .required("Email is required"),
     role: Yup.string().required("Role is required"),
-    mobile: Yup.string().required("Mobile number is required"),
+    phonenumber: Yup.string().required("Mobile number is required"),
     password: Yup.string().required("Password is required"),
   });
 
@@ -66,7 +66,7 @@ const Dashboard = () => {
     email: "",
     role: "",
     password: "",
-    mobile: "",
+    phonenumber: "",
   };
 
   // Handle modal popup toggle
@@ -82,14 +82,14 @@ const Dashboard = () => {
           Authorization: `bearer ${token}`,
         },
       });
-      if (response.status === 201) {
+      if (response.status === 200) {
         toast.success("User added successfully");
         getAllUsers();
         setModelPopup(false);
       }
     } catch (error) {
-      console.error("Error adding user:", error);
-      toast.error("Failed to add user");
+      console.error("Error adding user:", error?.response?.data?.detail);
+      toast.error(error?.response?.data?.detail);
     }
   };
 
@@ -115,7 +115,9 @@ const Dashboard = () => {
                     placeholder="Enter First Name"
                   />
                   {touched.firstName && errors.firstName && (
-                    <div className="text-red-500 text-sm">{errors.firstName}</div>
+                    <div className="text-red-500 text-sm">
+                      {errors.firstName}
+                    </div>
                   )}
                 </div>
                 <div className="flex-1">
@@ -126,7 +128,9 @@ const Dashboard = () => {
                     placeholder="Enter Last Name"
                   />
                   {touched.lastName && errors.lastName && (
-                    <div className="text-red-500 text-sm">{errors.lastName}</div>
+                    <div className="text-red-500 text-sm">
+                      {errors.lastName}
+                    </div>
                   )}
                 </div>
               </div>
@@ -144,13 +148,15 @@ const Dashboard = () => {
               </div>
               <div className="mb-3">
                 <Field
-                  name="mobile"
+                  name="phonenumber"
                   as={Input}
                   label="Phone Number"
                   placeholder="Enter Phone Number"
                 />
-                {touched.mobile && errors.mobile && (
-                  <div className="text-red-500 text-sm">{errors.mobile}</div>
+                {touched.phonenumber && errors.phonenumber && (
+                  <div className="text-red-500 text-sm">
+                    {errors.phonenumber}
+                  </div>
                 )}
               </div>
               <div className="mb-3">

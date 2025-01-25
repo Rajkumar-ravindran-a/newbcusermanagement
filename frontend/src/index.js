@@ -7,14 +7,18 @@ import { BrowserRouter } from "react-router-dom";
 import "./scss/main.scss";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./output.css";
-
+import { ThemeProvider } from "@mui/material";
+import MainTheme from "../src/theme/mainTheme/MainTheme.jsx";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   // <React.StrictMode>
+  <ThemeProvider theme={MainTheme}>
     <BrowserRouter>
       <App />
     </BrowserRouter>
+  </ThemeProvider>
+
   // </React.StrictMode>
 );
 

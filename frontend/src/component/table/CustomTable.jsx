@@ -101,7 +101,8 @@ const CustomTable = ({ title = [], tableData = [], renderAction }) => {
             <TableRow key={rowIndex}>
               {Object.keys(rowData).map((key, colIndex) => {
                 // Skip specific keys dynamically
-                if (["status", "id", "brokerId","fundAllocated"].includes(key)) return null;
+                
+                if (["status", "id", "brokerId", "fundAllocated", "Record Id"].includes(key)) return null;
                 return (
                   <TableCell key={`${rowIndex}-${colIndex}`} align="center">
                     {key === "action" && renderAction ? (
