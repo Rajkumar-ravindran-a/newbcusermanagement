@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, JSON, Float
 from datetime import datetime
 from config.dbconnection import engine, base
 
@@ -8,11 +8,16 @@ base = base
 class Brokers(base):
     __tablename__ = 'brokers'
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    # New column names as per the given structure
     brokerName = Column(String(50), nullable=False)
-    grossfund = Column(Integer)
-    arbitragefund = Column(Integer)
-    propfund = Column(Integer)
-    brokerStatus = Column(Integer,  ForeignKey("status.id"), nullable=False, default=1)
+    grossFund = Column(Integer)  # Renamed 'grossfund'
+    arbitrageFund = Column(Integer)  # Renamed 'arbitragefund'
+    propFund = Column(Integer)  # Renamed 'propfund'
+    interest = Column(Float, nullable=True)  # Assuming a calculation for Interest
+    sharing = Column(Float, nullable=True)  # Assuming a calculation for Sharing
+    costPerCr = Column(Float, nullable=True)  # Assuming a calculation for CostPerCr
+    totalFund = Column(Integer, nullable=True)  # Total fund calculation can be added here
+    brokerStatus = Column(Integer, ForeignKey("status.id"), nullable=False, default=1)
     releaseDate = Column(DateTime, nullable=True)
     createAt = Column(DateTime, index=True, default=datetime.now)
     updatedAt = Column(DateTime, index=True, default=datetime.now)
@@ -24,13 +29,12 @@ class Ids(base):
     brokerId = Column(Integer, nullable=False)
     emloyeeId = Column(Integer, ForeignKey("users.id"), nullable=False)
     idType = Column(String(50), nullable=False)
-    nism = Column(Integer, nullable=False)
+    nism = Column(String(100), nullable=False)
     idStatus = Column(Integer, ForeignKey("status.id"), nullable=False, default=1)
     startDate = Column(DateTime, nullable=False)
     releaseDate = Column(DateTime, nullable=True)
     createAt = Column(DateTime, index=True, default=datetime.now)
     updatedAt = Column(DateTime, index=True, default=datetime.now)
-
 
 
 class userRole(base):

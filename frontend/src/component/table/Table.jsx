@@ -8,11 +8,19 @@ import {
   TableRow,
   Avatar,
   Button,
+  IconButton,
   Pagination,
   Typography,
   TextField,
   Paper,
 } from "@mui/material";
+import { CiMenuKebab } from "react-icons/ci";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
 
 const statusColorMap = {
   Active: "success",
@@ -25,11 +33,11 @@ export const columns = [
   { name: "NAME", key: "name" },
   { name: "ROLE", key: "role" },
   { name: "STATUS", key: "userStatus" },
+  {name: "Phone Number", key: "phoneNumber" },
   { name: "ACTIONS", key: "actions" },
 ];
 
-const TableComponent = ({ Userdata }) => {
-  console.log("userData", Userdata);
+const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -48,17 +56,15 @@ const TableComponent = ({ Userdata }) => {
     switch (columnKey) {
       case "id":
         return (
-          <div style={{ display: "flex", alignItems: "center", justifyContent:"center" }}>{user.id}</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {user.id}
+          </div>
         );
 
       case "name":
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
-            <Avatar
-              src={user.avatar}
-              alt={user.firstName}
-              style={{ marginRight: "10px" }}
-            >
+            <Avatar src={user.avatar} alt={user.firstName} style={{ marginRight: "10px" }}>
               {user.firstName?.charAt(0)?.toUpperCase() || ""}
             </Avatar>
             <div>
@@ -84,9 +90,7 @@ const TableComponent = ({ Userdata }) => {
         return (
           <Typography
             variant="body2"
-            color={
-              statusColorMap[user.userStatus] || "textSecondary"
-            } /* Color dynamically based on status */
+            color={statusColorMap[user.userStatus] || "textSecondary"} // Dynamically color based on status
           >
             {cellValue}
           </Typography>
@@ -94,15 +98,26 @@ const TableComponent = ({ Userdata }) => {
       case "actions":
         return (
           <div style={{ display: "flex", gap: "10px" }}>
-            <Button variant="outlined" color="primary" size="small">
-              Details
-            </Button>
-            <Button variant="outlined" color="secondary" size="small">
-              Edit
-            </Button>
-            <Button variant="outlined" color="error" size="small">
-              Delete
-            </Button>
+            <Dropdown>
+              <DropdownTrigger>
+                <IconButton>
+                  <CiMenuKebab />
+                </IconButton>
+              </DropdownTrigger>
+              <DropdownMenu
+                aria-label="Action menu"
+                onAction={(key) => {
+                  if (key === "update") {
+                    onUpdateClick(user); // Trigger update for user
+                  } else if (key === "delete") {
+                    onDeleteClick(user.id); // Trigger delete for user
+                  }
+                }}
+              >
+                <DropdownItem key="update">Update Employee</DropdownItem>
+                <DropdownItem key="delete">Delete Employee</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
           </div>
         );
       default:
@@ -112,8 +127,8 @@ const TableComponent = ({ Userdata }) => {
 
   return (
     <>
-      <TableContainer>
-        <Table sx={{ minHidth: "650px" }} aria-label="simple table">
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="user table">
           <TableHead>
             <TableRow>
               {columns.map((column) => (
@@ -144,13 +159,15 @@ const TableComponent = ({ Userdata }) => {
                   align="center"
                   style={{ height: "200px" }}
                 >
-                  No data available
+                  <Typography variant="h6">No data available</Typography>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination and rows per page control */}
       <div
         style={{
           display: "flex",

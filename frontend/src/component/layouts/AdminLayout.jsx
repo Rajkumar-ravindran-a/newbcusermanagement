@@ -14,10 +14,10 @@ import {
 const AdminLayout = ({ children, pageTitle, pageSubtitle }) => {
   const token = localStorage.getItem("token");
   const decoded = jwtDecode(token);
- const handleLogout = async () => {
-   localStorage.removeItem("token");
-   window.location.href = "/";
- };
+  const handleLogout = async () => {
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  };
   return (
     <div className="flex h-full w-full gap-2">
       <div className="adminLayoutNavbar">
@@ -50,7 +50,7 @@ const AdminLayout = ({ children, pageTitle, pageSubtitle }) => {
                   <div className="details-user">
                     <p className="details-user-name">{decoded.fullName}</p>
                     <Typography variant="caption details-user-role">
-                      {decoded.role == 1 ? "Admin" : "Employee"}
+                      {decoded.role === 1 ? "Admin" : "Employee"}
                     </Typography>
                   </div>
                   <div className="mt-2">
@@ -64,12 +64,14 @@ const AdminLayout = ({ children, pageTitle, pageSubtitle }) => {
               <DropdownItem key="copy">Copy link</DropdownItem>
               <DropdownItem key="edit">Edit file</DropdownItem> */}
               <DropdownItem key="delete" className="text-danger" color="danger">
-                <Button className="w-full text-danger" onClick={handleLogout}>Logout</Button>
+                <Button className="w-full text-danger" onClick={handleLogout}>
+                  Logout
+                </Button>
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
         </div>
-        {children}
+        <div>{children}</div>
       </div>
     </div>
   );

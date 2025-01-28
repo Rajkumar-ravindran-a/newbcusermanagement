@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, date
-from typing import Optional, List
+from typing import Optional, List, Dict
 from models.userModel import TradeData, Users, userRole, Status, Brokers, Ids
 from config.dbconnection import sessionLocal
 from sqlalchemy.orm import Session
@@ -63,6 +63,7 @@ origins = [
     "https://yourfrontenddomain.com",
     "http://localhost:5173",
     "*",
+    "http://43.204.150.47" "http://43.204.150.47:3000",
     # Another domain that needs access
     # You can add more origins here as needed
 ]
@@ -120,18 +121,18 @@ class UserCreate(BaseModel):
 
 
 class CreateIdRequest(BaseModel):
-    id: int
+    id: str
     brokerName: int
     employee: int
     idType: str
-    nism: int | None = None  # Optional field
+    nism: str | None = None
     startDate: date
-    releaseDate: date | None = None  # Optional field
+    releaseDate: date | None = None
 
 
 class TradeDataRequest(BaseModel):
     broker: str
-    Date: str  # Use string format (e.g., 'YYYY-MM-DD HH:MM:SS') for date
+    Date: str
     tradeId: int
     strategy: str
     counter: Optional[int] = None
@@ -153,6 +154,7 @@ class UserResponse(BaseModel):
     lastName: str
     email: str
     role: str
+    phoneNumber: str
     userStatus: str
     createAt: datetime
     # updatedAt: datetime
@@ -224,6 +226,63 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     except Exception as err:
         print("Error", err)
         raise HTTPException(status_code=500, detail="internal server error")
+
+
+@app.put("/updateUser/{user_id}")
+def update_user(user_id: int, user: UserCreate, db: Session = Depends(get_db)):
+    # Check if the user exists by their ID
+    existing_user = db.query(Users).filter(Users.id == user_id).first()
+    
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # If password is provided, hash it
+    if user.password:
+        hashed_password = get_password_hash(user.password)
+        existing_user.pwd = hashed_password
+    
+    # Update other user details
+    # existing_user.email = user.email
+    existing_user.firstName = user.firstName
+    existing_user.lastName = user.lastName
+    existing_user.role = user.role
+    existing_user.phonenumber = user.phonenumber
+    existing_user.userStatus = user.userStatus
+    existing_user.updatedAt = datetime.now()
+
+    try:
+        db.add(existing_user)
+        db.commit()  # Commit the changes to the user
+        db.refresh(existing_user)
+        return {"message": "User updated successfully"}
+    except exc.SQLAlchemyError as e:
+        db.rollback()
+        print("Error:", e)
+        raise HTTPException(status_code=500, detail="Database error")
+    except Exception as err:
+        print("Error:", err)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.delete("/deleteUser/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    # Check if the user exists by their ID
+    existing_user = db.query(Users).filter(Users.id == user_id).first()
+    
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    try:
+        db.delete(existing_user)  # Delete the user record
+        db.commit()  # Commit the deletion
+        return {"message": "User deleted successfully"}
+    except exc.SQLAlchemyError as e:
+        db.rollback()
+        print("Error:", e)
+        raise HTTPException(status_code=500, detail="Database error")
+    except Exception as err:
+        print("Error:", err)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/login", response_model=Token)
@@ -365,7 +424,9 @@ async def get_users(
             .filter(Users.id != current_user.id)
             .all()
         )
+        
         for userdata, roledata, statusdata in users:
+            print(userdata.phonenumber)
             outPut.append(
                 {
                     "id": userdata.id,
@@ -373,6 +434,7 @@ async def get_users(
                     "lastName": userdata.lastName,
                     "email": userdata.email,
                     "role": roledata.roleName,
+                    "phoneNumber": userdata.phonenumber if userdata.phonenumber else "",
                     "userStatus": statusdata.statusName,
                     "createAt": userdata.createAt,
                 }
@@ -383,33 +445,96 @@ async def get_users(
 
 
 @app.post("/createBroker")
-async def createBreak(
-    response: dict,
+async def create_broker(
+    response: dict,  # Properly typed the response
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
+    # Authorization check - Role should be 1 (admin or any other privileged role)
     if current_user.role != 1:
-        HTTPException(status_code=500, detail="unAuthorized")
+        raise HTTPException(status_code=403, detail="Unauthorized")
 
-    print(response)
+    broker_name = response.get("brokerName")
 
-    createBrocker = Brokers(
-        brokerName=response["brokerName"],
-        grossfund=response["grossFund"],
-        arbitragefund=response["arbitrageFund"],
-        propfund=response["propFund"],
+    # Check if a broker with the same name and status not 3 exists
+    existing_broker = (
+        db.query(Brokers)
+        .filter(Brokers.brokerName == broker_name, Brokers.brokerStatus != 3)
+        .first()
     )
+
+    if existing_broker:
+        raise HTTPException(status_code=400, detail="The broker name is already active")
+
+    # Extract and calculate necessary fields from the response
+    gross_fund = int(response.get("grossFund", 0))
+    arbitrage_fund = int(response.get("arbitrageFund", 0))
+    prop_fund = int(response.get("propFund", 0))
+
+    # Assuming these are calculations for the new fields
+    interest = response.get("interest", 0)
+    sharing = response.get("sharing")
+    cost_per_cr = response.get("costPerCr")
+    total_fund = gross_fund + arbitrage_fund + prop_fund
+
+    # Create broker instance
+    create_broker = Brokers(
+        brokerName=broker_name,
+        grossFund=gross_fund,
+        arbitrageFund=arbitrage_fund,
+        propFund=prop_fund,
+        interest=interest,
+        sharing=sharing,
+        costPerCr=cost_per_cr,
+        totalFund=total_fund,
+    )
+
     try:
-        db.add(createBrocker)
+        db.add(create_broker)
         db.commit()
-        return {"message": "Brokers created successfully"}
+        return {"message": "Broker created successfully"}
     except exc.SQLAlchemyError as e:
-        db.rollback()
-        print("Error", e)
+        db.rollback()  # Rollback the transaction if there is a database error
+        print("Database Error:", e)
         raise HTTPException(status_code=500, detail="Database error")
     except Exception as err:
-        print("Error", err)
-        raise HTTPException(status_code=500, detail="internal server error")
+        print("Error:", err)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+# Helper functions for calculation (as before)
+def calculate_interest(gross_fund, arbitrage_fund, prop_fund):
+    # Placeholder calculation for interest
+    return gross_fund * 0.05  # Assuming 5% interest on gross fund
+
+
+def calculate_sharing(gross_fund):
+    # Placeholder calculation for sharing
+    return gross_fund * 0.10  # Assuming 10% sharing on gross fund
+
+
+def calculate_cost_per_cr(gross_fund):
+    # Placeholder calculation for cost per CR
+    return (
+        gross_fund / 100
+    )  # Assuming cost per CR is calculated as gross fund divided by 100
+
+
+def calculate_interest(gross_fund, arbitrage_fund, prop_fund):
+    # Placeholder calculation for interest
+    return gross_fund * 0.05  # Assuming 5% interest on gross fund
+
+
+def calculate_sharing(gross_fund):
+    # Placeholder calculation for sharing
+    return gross_fund * 0.10  # Assuming 10% sharing on gross fund
+
+
+def calculate_cost_per_cr(gross_fund):
+    # Placeholder calculation for cost per CR
+    return (
+        gross_fund / 100
+    )  # Assuming cost per CR is calculated as gross fund divided by 100
 
 
 @app.post("/createId")
@@ -444,6 +569,7 @@ async def createId(
         print("Error", err)
         raise HTTPException(status_code=500, detail="internal server error")
 
+
 @app.put("/updateId/{record_id}")
 async def update_id(
     record_id: int,
@@ -456,7 +582,7 @@ async def update_id(
 
     # Fetch existing record
     existing_record = db.query(Ids).filter(Ids.recordId == record_id).first()
-    
+
     if not existing_record:
         raise HTTPException(status_code=404, detail="ID record not found")
 
@@ -478,7 +604,10 @@ async def update_id(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
     except Exception as err:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(err)}")
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(err)}"
+        )
+
 
 @app.get("/getIds")
 async def get_ids(
@@ -493,11 +622,16 @@ async def get_ids(
     try:
         # Fetch IDs with optional filtering
         if broker_id:
-            results = db.query(Ids).filter(Ids.brokerId == broker_id).all()
+            # Filter out brokers with status 3
+            results = (
+                db.query(Ids).filter(Ids.brokerId == broker_id, Ids.brokerId != 3).all()
+            )
         else:
             results = (
-                db.query(Ids, Brokers)
+                db.query(Ids, Brokers, Users)
                 .outerjoin(Brokers, Brokers.id == Ids.brokerId)
+                .outerjoin(Users, Users.id == Ids.emloyeeId)
+                # .filter(Brokers.brokerStatus != 3)  # Exclude brokers with status 3
                 .all()
             )
 
@@ -510,14 +644,14 @@ async def get_ids(
                 "recordId": id_record.recordId,
                 "brokerId": id_record.brokerId,
                 "brokerName": broker_record.brokerName if broker_record else None,
-                "employeeId": id_record.emloyeeId,
+                "employeeId": user_record.firstName if user_record else None,
                 "idType": id_record.idType,
                 "nism": id_record.nism,
                 "status": id_record.idStatus,
                 "startDate": id_record.startDate,
                 "releaseDate": id_record.releaseDate,
             }
-            for id_record, broker_record in results
+            for id_record, broker_record, user_record in results
         ]
 
         return {"data": ids}
@@ -548,9 +682,12 @@ async def getBroker(
                 {
                     "id": datas.id,
                     "brokerName": datas.brokerName,
-                    "grossfund": datas.grossfund,
-                    "arbitragefund": datas.arbitragefund,
-                    "propfund": datas.propfund,
+                    "grossfund": datas.grossFund,
+                    "arbitragefund": datas.arbitrageFund,
+                    "propfund": datas.propFund,
+                    "intrest": datas.interest,
+                    "shares": datas.sharing,
+                    "costPerCr": datas.costPerCr,
                     "startDate": datas.createAt.strftime("%Y-%m-%d %H:%M:%S"),
                     "status": datas.brokerStatus,
                     "releaseDate": (
@@ -618,7 +755,68 @@ async def relaseId(
 
     except Exception as e:
         print("error in relaseId", e)
-        return {"status":500, "details":"Internal server error"}
+        return {"status": 500, "details": "Internal server error"}
+
+
+@app.put("/updateBroker/{broker_id}")
+async def update_broker(
+    broker_id: int,
+    response: dict,  # Properly typed response for broker update
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    # Authorization check - Role should be 1 (admin or any other privileged role)
+    if current_user.role != 1:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    # Check if the broker exists
+    broker = db.query(Brokers).filter(Brokers.id == broker_id).first()
+    if not broker:
+        raise HTTPException(status_code=404, detail="Broker not found")
+
+    broker_name = response.get("brokerName")
+
+    # If the broker name is changed, check if the new name is active
+    if broker_name != broker.brokerName:
+        existing_broker = (
+            db.query(Brokers)
+            .filter(Brokers.brokerName == broker_name, Brokers.brokerStatus != 3)
+            .first()
+        )
+
+        if existing_broker:
+            raise HTTPException(
+                status_code=400, detail="The broker name is already active"
+            )
+
+    # Update the broker fields (if provided in the response)
+    broker.brokerName = broker_name
+    broker.grossFund = int(response.get("grossFund", broker.grossFund))
+    broker.arbitrageFund = int(response.get("arbitrageFund", broker.arbitrageFund))
+    broker.propFund = int(response.get("propFund", broker.propFund))
+
+    # Assuming these are calculations for the new fields
+    broker.interest = response.get("interest", broker.interest)
+    broker.sharing = response.get("sharing", broker.sharing)
+    broker.costPerCr = response.get("costPerCr", broker.costPerCr)
+    broker.totalFund = (
+        broker.grossFund + broker.arbitrageFund + broker.propFund
+    )  # Update total fund
+
+    # Optionally update release date if provided
+    if response.get("releaseDate"):
+        broker.releaseDate = response.get("releaseDate")
+
+    try:
+        db.commit()
+        return {"message": "Broker updated successfully"}
+    except exc.SQLAlchemyError as e:
+        db.rollback()  # Rollback the transaction if there is a database error
+        print("Database Error:", e)
+        raise HTTPException(status_code=500, detail="Database error")
+    except Exception as err:
+        print("Error:", err)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class StrategyDataIn(BaseModel):

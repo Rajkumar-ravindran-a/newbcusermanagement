@@ -1,22 +1,39 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../layouts/AdminLayout";
 import TableComponent from "../table/Table";
-import { TextField, Typography, Button } from "@mui/material";
+import {
+  TextField,
+  Typography,
+  Button,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  InputAdornment,
+  IconButton,
+  Card,
+} from "@mui/material";
 import ModelPoper from "../Model";
 import { Formik, Field, Form } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import api from "../../config/AxiosCofig";
 import { IoAddCircleOutline, IoSearch } from "react-icons/io5";
-import { Input } from "@nextui-org/react";
-import InputAdornment from "@mui/material/InputAdornment";
-import { Card, Select, SelectItem } from "@nextui-org/react";
 
 const Dashboard = () => {
   const token = localStorage.getItem("token");
   const [userData, setUserData] = useState([]);
   const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const [modelPopup, setModelPopup] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false); // Flag to check if we're in update mode
+  const [initialValues, setInitialValues] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "",
+    password: "",
+    phonenumber: "",
+  });
 
   // Fetch all users
   const getAllUsers = async () => {
@@ -54,65 +71,97 @@ const Dashboard = () => {
     email: Yup.string()
       .email("Invalid email format")
       .required("Email is required"),
-    role: Yup.string().required("Role is required"),
+    role: Yup.number().required("Role is required"),
     phonenumber: Yup.string().required("Mobile number is required"),
-    password: Yup.string().required("Password is required"),
+    password: isUpdate
+      ? Yup.string().notRequired()
+      : Yup.string().required("Password is required"),
   });
 
-  // Initial form values
-  const initialValues = {
-    firstName: "",
-    lastName: "",
-    email: "",
-    role: "",
-    password: "",
-    phonenumber: "",
-  };
-
   // Handle modal popup toggle
-  const handleModelPopup = () => {
-    setModelPopup(!modelPopup);
+  const handleModelPopup = (user = null) => {
+    if (user) {
+      setInitialValues({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phonenumber: user.phoneNumber,
+        role: user.role === "Employee" ? 2 : 0,
+        password: "", // Password is optional during update
+      });
+      setIsUpdate(true); // Indicate update mode
+    } else {
+      setInitialValues({
+        firstName: "",
+        lastName: "",
+        email: "",
+        role: "",
+        password: "",
+        phonenumber: "",
+      });
+      setIsUpdate(false); // Indicate create mode
+    }
+    setModelPopup(true);
   };
 
   // Handle form submission
   const handleSubmit = async (values) => {
     try {
-      const response = await api.post("/register", values, {
-        headers: {
-          Authorization: `bearer ${token}`,
-        },
-      });
-      if (response.status === 200) {
-        toast.success("User added successfully");
-        getAllUsers();
-        setModelPopup(false);
+      console.log(`/updateUser/${values.id}`,"======")
+      if (isUpdate) {
+        // Update user
+        const response = await api.put(`/updateUser/${values.id}`, values, {
+          headers: {
+            Authorization: `bearer ${token}`,
+          },
+        });
+        if (response.status === 200) {
+          toast.success("User updated successfully");
+          getAllUsers();
+          setModelPopup(false);
+        }
+      } else {
+        // Create new user
+        const response = await api.post("/register", values, {
+          headers: {
+            Authorization: `bearer ${token}`,
+          },
+        });
+        if (response.status === 200) {
+          toast.success("User added successfully");
+          getAllUsers();
+          setModelPopup(false);
+        }
       }
     } catch (error) {
-      console.error("Error adding user:", error?.response?.data?.detail);
+      console.error("Error submitting user:", error?.response?.data?.detail);
       toast.error(error?.response?.data?.detail);
     }
   };
 
   return (
     <AdminLayout pageTitle="All users" pageSubtitle="Manage user details">
-      <ModelPoper open={modelPopup} handleClose={handleModelPopup}>
+      <ModelPoper open={modelPopup} handleClose={() => setModelPopup(false)}>
         <Typography variant="h6" className="mb-2">
-          Add user
+          {isUpdate ? "Update User" : "Add User"}
         </Typography>
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
+          enableReinitialize
         >
-          {({ errors, touched }) => (
+          {({ errors, touched, setFieldValue }) => (
             <Form>
               <div className="flex gap-4 mb-3">
                 <div className="flex-1">
                   <Field
                     name="firstName"
-                    as={Input}
+                    as={TextField}
                     label="First Name"
                     placeholder="Enter First Name"
+                    fullWidth
                   />
                   {touched.firstName && errors.firstName && (
                     <div className="text-red-500 text-sm">
@@ -123,9 +172,10 @@ const Dashboard = () => {
                 <div className="flex-1">
                   <Field
                     name="lastName"
-                    as={Input}
+                    as={TextField}
                     label="Last Name"
                     placeholder="Enter Last Name"
+                    fullWidth
                   />
                   {touched.lastName && errors.lastName && (
                     <div className="text-red-500 text-sm">
@@ -138,9 +188,11 @@ const Dashboard = () => {
                 <Field
                   name="email"
                   type="email"
-                  as={Input}
+                  as={TextField}
                   label="Email"
                   placeholder="Enter Your Email"
+                  fullWidth
+                  disabled={isUpdate}
                 />
                 {touched.email && errors.email && (
                   <div className="text-red-500 text-sm">{errors.email}</div>
@@ -149,9 +201,10 @@ const Dashboard = () => {
               <div className="mb-3">
                 <Field
                   name="phonenumber"
-                  as={Input}
+                  as={TextField}
                   label="Phone Number"
                   placeholder="Enter Phone Number"
+                  fullWidth
                 />
                 {touched.phonenumber && errors.phonenumber && (
                   <div className="text-red-500 text-sm">
@@ -160,39 +213,48 @@ const Dashboard = () => {
                 )}
               </div>
               <div className="mb-3">
-                <Field
-                  name="role"
-                  as={Select}
-                  label="Role"
-                  placeholder="Select Role"
-                >
-                  <SelectItem key="2">Employee</SelectItem>
-                </Field>
+                <FormControl fullWidth>
+                  <InputLabel>Role</InputLabel>
+                  <Field
+                    name="role"
+                    as={Select}
+                    label="Role"
+                    onChange={(event) => setFieldValue("role", event.target.value)} // Correctly handle role update
+                  >
+                    <MenuItem value="2">Employee</MenuItem>
+                    {/* Add more roles if needed */}
+                  </Field>
+                </FormControl>
                 {touched.role && errors.role && (
                   <div className="text-red-500 text-sm">{errors.role}</div>
                 )}
               </div>
-              <div className="mb-3">
-                <Field
-                  name="password"
-                  type="password"
-                  as={Input}
-                  label="Password"
-                  placeholder="Enter Password"
-                />
-                {touched.password && errors.password && (
-                  <div className="text-red-500 text-sm">{errors.password}</div>
-                )}
-              </div>
+              {!isUpdate && (
+                <div className="mb-3">
+                  <Field
+                    name="password"
+                    type="password"
+                    as={TextField}
+                    label="Password"
+                    placeholder="Enter Password"
+                    fullWidth
+                  />
+                  {touched.password && errors.password && (
+                    <div className="text-red-500 text-sm">
+                      {errors.password}
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="mt-4 flex gap-4">
                 <Button
                   type="submit"
                   className="mr-3 submit-btn"
                   variant="contained"
                 >
-                  Add User
+                  {isUpdate ? "Update User" : "Add User"}
                 </Button>
-                <Button variant="flat" onClick={handleModelPopup}>
+                <Button variant="outlined" onClick={() => setModelPopup(false)}>
                   Cancel
                 </Button>
               </div>
@@ -211,10 +273,13 @@ const Dashboard = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <IoSearch />
+                    <IconButton>
+                      <IoSearch />
+                    </IconButton>
                   </InputAdornment>
                 ),
               }}
+              fullWidth
             />
             <Button
               className="h-5 mb-4 addUserButton"
@@ -225,8 +290,10 @@ const Dashboard = () => {
               Add New Employee
             </Button>
           </div>
-          {console.log(filteredUsers)}
-          <TableComponent Userdata={filteredUsers} />
+          <TableComponent
+            Userdata={filteredUsers}
+            onUpdateClick={(user) => handleModelPopup(user)} // Pass user data to update
+          />
         </div>
       </Card>
     </AdminLayout>

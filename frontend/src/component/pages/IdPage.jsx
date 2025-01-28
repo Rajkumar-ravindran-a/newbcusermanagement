@@ -20,7 +20,7 @@ import AdminLayout from "../layouts/AdminLayout.jsx";
 import api from "../../config/AxiosCofig.js";
 import { toast } from "react-toastify";
 import { Card } from "@nextui-org/react";
-import { IoSearch } from "react-icons/io5";
+import { IoSearch, IoAddCircleOutline } from "react-icons/io5";
 import { CiMenuKebab } from "react-icons/ci";
 import {
   Dropdown,
@@ -51,13 +51,14 @@ const brokerTableTitle = [
 
 const AdminSettings = () => {
   const [brokerData, setBrokerData] = useState([]);
+  const [selectedBrokerFilter, setSelectedBrokerFilter] = useState("");
+  const [idData, setIdData] = useState([]);
+  const [filteredIdData, setFilteredIdData] = useState([]);
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [getUserList, setGetUserList] = useState([]);
-  const [idData, setIdData] = useState([]);
   const [selectedBroker, setSelectedBroker] = useState(null);
-  const [menuAnchor, setMenuAnchor] = useState(null);
-  const [selectedRecordId, setSelectedRecordId] = useState(null);
+  const [loader, setLoader] = useState(false);
 
   const getBrokerData = async () => {
     try {
@@ -71,36 +72,9 @@ const AdminSettings = () => {
     }
   };
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setOpen(false);
-    setEditMode(false);
-    setSelectedBroker(null);
-  };
-
-  const handleMenuClick = (event, recordId) => {
-    setMenuAnchor(event.currentTarget);
-    setSelectedRecordId(recordId);
-  };
-
-  const handleMenuClose = () => {
-    setMenuAnchor(null);
-    setSelectedRecordId(null);
-  };
-
-  const getuserData = async () => {
-    try {
-      const response = await api.get("/users");
-      if (response.status === 200) {
-        setGetUserList(response.data);
-      }
-    } catch (error) {
-      toast.error("Error fetching user data.");
-    }
-  };
-
   const getIdData = async () => {
     try {
+      setLoader(true);
       const response = await api.get("/getIds");
       if (response.status === 200) {
         const structureData = response.data.data.map((data) => ({
@@ -109,15 +83,13 @@ const AdminSettings = () => {
           "Start Date": data.startDate,
           "Releases Date": data.releaseDate || "-",
           "Record Id": data.recordId,
-          Employee: data?.employee || "-",
+          Employee: data?.employeeId || "-",
           Nism: data.nism,
           IdType: data.idType,
           Action: (
             <Dropdown>
               <DropdownTrigger>
-                <IconButton
-                  onClick={(event) => handleMenuClick(event, data.recordId)}
-                >
+                <IconButton>
                   <CiMenuKebab />
                 </IconButton>
               </DropdownTrigger>
@@ -134,20 +106,56 @@ const AdminSettings = () => {
                 <DropdownItem key="release" isDisabled={data.status === 3}>
                   Release
                 </DropdownItem>
-                <DropdownItem key="edit" isDisabled={data.status === 3}>Edit</DropdownItem>
+                <DropdownItem key="edit" isDisabled={data.status === 3}>
+                  Edit
+                </DropdownItem>
               </DropdownMenu>
             </Dropdown>
           ),
         }));
         setIdData(structureData);
+        setFilteredIdData(structureData);
+        setLoader(false);
       }
     } catch (error) {
+      setLoader(false);
       toast.error("Error fetching ID data.");
     }
   };
 
+  const handleFilterChange = (event) => {
+    const selectedBroker = event.target.value;
+    setSelectedBrokerFilter(selectedBroker);
+
+    if (selectedBroker) {
+      const filteredData = idData.filter(
+        (data) => data["Broker Name"] === selectedBroker
+      );
+      setFilteredIdData(filteredData);
+    } else {
+      setFilteredIdData(idData);
+    }
+  };
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => {
+    setOpen(false);
+    setEditMode(false);
+    setSelectedBroker(null);
+  };
+
+  const getuserData = async () => {
+    try {
+      const response = await api.get("/users");
+      if (response.status === 200) {
+        setGetUserList(response.data);
+      }
+    } catch (error) {
+      toast.error("Error fetching user data.");
+    }
+  };
+
   const editBroker = (broker) => {
-    console.log(broker)
     setSelectedBroker(broker);
     setEditMode(true);
     handleOpen();
@@ -188,35 +196,64 @@ const AdminSettings = () => {
 
   const initialValues = {
     brokerName: selectedBroker?.brokerId || "",
-    id: selectedBroker?.idNumber ||"",
+    id: selectedBroker?.idNumber || "",
     startDate: selectedBroker?.startDate || "",
     employee: selectedBroker?.employeeId || "",
-    nism: selectedBroker?.nism ||"",
-    idType: selectedBroker?.idType ||"",
+    nism: selectedBroker?.nism || "",
+    idType: selectedBroker?.idType || "",
   };
 
   return (
     <AdminLayout pageTitle="ID Management" pageSubtitle="Manage ID details">
       <Card style={{ marginTop: "1rem" }}>
         <div className="flex justify-between p-4 align-middle">
-          <TextField
-            className="searchUser"
-            placeholder="Search"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IoSearch />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <Button onClick={handleOpen} variant="contained" color="primary">
+          <div className="flex gap-3">
+            <TextField
+              className="searchUser"
+              placeholder="Search"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <IoSearch />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <FormControl style={{ minWidth: 200, marginRight: "1rem" }}>
+              {/* <InputLabel id="brokerFilter-label">Filter by Broker</InputLabel> */}
+              <Select
+                // labelId="brokerFilter-label"
+                value={selectedBrokerFilter}
+                onChange={handleFilterChange}
+                // label="Filter by Broker"
+                displayEmpty
+              >
+                <MenuItem value="">All Brokers</MenuItem>
+                {brokerData.map((broker, index) => (
+                  <MenuItem key={index} value={broker.brokerName}>
+                    {broker.brokerName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+
+          <Button
+            onClick={handleOpen}
+            variant="contained"
+            color="primary"
+            startIcon={<IoAddCircleOutline />}
+          >
             Add ID
           </Button>
         </div>
 
         <Box mt={4}>
-          <CustomTable title={brokerTableTitle} tableData={idData} />
+          <CustomTable
+            title={brokerTableTitle}
+            tableData={filteredIdData}
+            loading={loader}
+          />
         </Box>
       </Card>
 
@@ -273,12 +310,11 @@ const AdminSettings = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                     >
-                      {brokerData &&
-                        brokerData.map((data, index) => (
-                          <MenuItem key={index} value={data.id}>
-                            {data.brokerName}
-                          </MenuItem>
-                        ))}
+                      {brokerData.map((data, index) => (
+                        <MenuItem key={index} value={data.id}>
+                          {data.brokerName}
+                        </MenuItem>
+                      ))}
                     </Select>
                     {touched.brokerName && Boolean(errors.brokerName) && (
                       <FormHelperText>{errors.brokerName}</FormHelperText>
@@ -314,20 +350,18 @@ const AdminSettings = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                     >
-                      {console.log(getUserList)}
-                      {getUserList &&
-                        getUserList.map((data, index) => (
-                          <MenuItem key={index} value={data.id}>
-                            {data.firstName + " " + data.lastName}
-                          </MenuItem>
-                        ))}
+                      {getUserList.map((data, index) => (
+                        <MenuItem key={index} value={data.id}>
+                          {data.firstName + " " + data.lastName}
+                        </MenuItem>
+                      ))}
                     </Select>
                     {touched.employee && errors.employee && (
                       <FormHelperText>{errors.employee}</FormHelperText>
                     )}
                   </FormControl>
                 </div>
-                <div>
+                <div className="flex gap-2">
                   <TextField
                     fullWidth
                     margin="normal"
@@ -351,9 +385,17 @@ const AdminSettings = () => {
                     helperText={touched.idType && errors.idType}
                   />
                 </div>
-                <div className="flex gap-2 mt-2 justify-start flex-row-reverse">
-                <Button variant="contained" color="secondary" onClick={handleClose}>Cancel</Button>
-                <Button type="submit" variant="contained" color="primary">{editMode ? "Update Id" : "Add Id"}</Button>
+                <div className="flex justify-end gap-4 mt-6">
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={handleClose}
+                  >
+                    Cancel
+                  </Button>
+                  <Button variant="contained" color="primary" type="submit">
+                    {editMode ? "Update" : "Add"}
+                  </Button>
                 </div>
               </Form>
             )}

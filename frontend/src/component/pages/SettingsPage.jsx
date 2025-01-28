@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Button, TextField } from "@mui/material";
+import { useState, useEffect, useCallback } from "react";
+import { Button, TextField, IconButton } from "@mui/material";
 import CustomTable from "../table/CustomTable.jsx";
 import AdminLayout from "../layouts/AdminLayout.jsx";
 import api from "../../config/AxiosCofig.js";
@@ -7,67 +7,113 @@ import { toast } from "react-toastify";
 import InputAdornment from "@mui/material/InputAdornment";
 import BrokerFormPopup from "../popups/BrokerFormPopup.jsx";
 import { Card } from "@nextui-org/react";
-import { IoSearch } from "react-icons/io5";
+import { IoSearch, IoAddCircleOutline } from "react-icons/io5";
+import { CiMenuKebab } from "react-icons/ci";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
 
 // Column Titles
+// const brokerTableTitle = [
+//   "Broker Name",
+//   "Start Date",
+//   "Release Date",
+//   "Gross Fund",
+//   "Arbitrage Fund",
+//   "Total Fund",
+//   "Prop Fund",
+//   "Action",
+// ];
+
 const brokerTableTitle = [
-  "Broker Name",
-  "Start Date",
-  "Release Date",
-  "Gross Fund",
-  "Arbitrage Fund",
+  "BrokerName",
+  "GrossFund",
+  "ArbitrageFund",
+  "PropFund",
+  "Interest",
+  "Sharing",
+  "CostPerCr",
   "Total Fund",
-  "Prop Fund",
+  "Start Date",
+  "Realease Date",
   "Action",
 ];
 
 const AdminSettings = () => {
   const [brokerData, setBrokerData] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null); // State for Popover anchor
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [loader, setLoader] = useState(false);
+  const [selectedBroker, setSelectedBroker] = useState(null);
 
   // Fetch Brokers Data
-  const getBrokerData = async () => {
+  const getBrokerData = useCallback(async () => {
+    setLoader(true);
     try {
       const response = await api.get("/getAllBroker");
       if (response.status === 200) {
-        const formattedData = response?.data?.data.map((broker) => ({
+        const formattedData = response.data?.data?.map((broker) => ({
           "Broker Name": broker.brokerName,
-          "Start Date": broker.startDate || "-",
-          "Release Date": broker.releaseDate || "-",
           "Gross Fund": broker.grossfund || "-",
           "Arbitrage Fund": broker.arbitragefund || "-",
           "Prop Fund": broker.propfund || "-",
+          "Intrest": broker.intrest || "-",
+          "shares": broker.shares || "-",
+          "costPerCr": broker.costPerCr || "-",
           "Total Fund": broker.grossfund + broker.arbitragefund || "-",
+          "Start Date": broker.startDate || "-",
+          "Release Date": broker.releaseDate || "-",
           Action: (
-            <div key={`action-${broker.id}`} className="action-buttons">
-              <Button
-                key={`release-${broker.id}`}
-                onClick={() => releaseBroker(broker)}
-                size="small"
-                variant="contained"
-                color="primary"
-                disabled={broker.status === 3}
+            <Dropdown>
+              <DropdownTrigger>
+                <IconButton>
+                  <CiMenuKebab />
+                </IconButton>
+              </DropdownTrigger>
+              <DropdownMenu
+                aria-label="Action menu"
+                onAction={(key) => handleDropdownAction(key, broker)}
               >
-                {broker.status === 3 ? "Released" : "Release"}
-              </Button>
-            </div>
+                <DropdownItem key="release" isDisabled={broker.status === 3}>
+                  Release
+                </DropdownItem>
+                <DropdownItem key="edit" isDisabled={broker.status === 3}>
+                  Edit
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
           ),
         }));
         setBrokerData(formattedData);
+      } else {
+        toast.error("Failed to fetch broker data.");
       }
     } catch (error) {
       console.error(error);
       toast.error("Error fetching broker data.");
+    } finally {
+      setLoader(false);
+    }
+  }, []);
+
+  // Handle Dropdown Actions
+  const handleDropdownAction = (action, broker) => {
+    if (action === "release") {
+      releaseBroker(broker);
+    } else if (action === "edit") {
+      setSelectedBroker(broker); 
+      setAnchorEl(document.body); 
     }
   };
 
-  // Release Broker Function
+  // Release Broker
   const releaseBroker = async (broker) => {
     try {
-      console.log(broker.id, "====================");
       const response = await api.put(`/releaseBroker/${broker.id}/3`);
       if (response.status === 200) {
-        toast.success(`Released broker: ${broker.brokerName}`);
+        toast.success(`Broker "${broker.brokerName}" released successfully.`);
         getBrokerData();
       }
     } catch (error) {
@@ -76,26 +122,26 @@ const AdminSettings = () => {
     }
   };
 
+  // Open and Close Popover
+  const handleClickPopover = (event) => setAnchorEl(event.currentTarget);
+  const handleClosePopover = () => {
+    setAnchorEl(null);
+    setSelectedBroker(null);
+  };
+
   useEffect(() => {
     getBrokerData();
-  }, []);
-
-  // Handle Popover Open and Close
-  const handleClickPopover = (event) => {
-    setAnchorEl(event.currentTarget); // Open the popover
-  };
-
-  const handleClosePopover = () => {
-    setAnchorEl(null); // Close the popover
-  };
+  }, [getBrokerData]);
 
   return (
     <AdminLayout
       pageTitle="Brokers"
-      pageSubtitle="Add, view and release brokers"
+      pageSubtitle="Add, view, and release brokers"
     >
-      <Card classNames="settings-mainCard" style={{ marginTop: "1rem" }}>
-        {/* Button to Open Popover */}
+      <Card
+        className="settings-mainCard"
+        style={{ marginTop: "1rem", width: "100%", overflowY: "scroll" }}
+      >
         <div className="flex justify-between p-4 align-middle broker-form">
           <TextField
             className="searchUser"
@@ -112,22 +158,39 @@ const AdminSettings = () => {
             variant="contained"
             color="primary"
             onClick={handleClickPopover}
+            startIcon={<IoAddCircleOutline />}
           >
             Add Broker
           </Button>
         </div>
 
-        {/* Broker Form Popover Component */}
         <BrokerFormPopup
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           handleClose={handleClosePopover}
-          onFormSubmit={getBrokerData} // Refresh broker data after form submission
+          onFormSubmit={getBrokerData}
+          brokerData={selectedBroker}
         />
 
-        {/* Table of Brokers */}
         <div className="mt-4">
-          <CustomTable title={brokerTableTitle} tableData={brokerData} />
+          <CustomTable
+            columnWidths={[
+              "10%",
+              "10%",
+              "10%",
+              "10%",
+              "15%",
+              "10%",
+              "10%",
+              "10%",
+              "40%",
+              "15%",
+              "10%",
+            ]}
+            title={brokerTableTitle}
+            tableData={brokerData}
+            loading={loader}
+          />
         </div>
       </Card>
     </AdminLayout>

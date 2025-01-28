@@ -16,25 +16,46 @@ const brokerValidationSchema = Yup.object().shape({
   propFund: Yup.number()
     .typeError("Prop Fund must be a number")
     .required("Prop Fund is required"),
+  interest: Yup.number()
+    .typeError("Interest must be a number")
+    .required("Interest is required"),
+  sharing: Yup.number()
+    .typeError("Sharing must be a number")
+    .required("Sharing is required"),
+  costPerCr: Yup.number()
+    .typeError("Cost must be a number")
+    .required("Cost is required"),
 });
 
-const BrokerFormPopup = ({ open, handleClose, onFormSubmit }) => {
+const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
+  console.log(brokerData);
   const initialValues = {
-    brokerName: "",
-    grossFund: "",
-    arbitrageFund: "",
-    propFund: "",
+    id: brokerData?.id || null,
+    brokerName: brokerData?.brokerName || "",
+    grossFund: brokerData?.grossfund || null,
+    arbitrageFund: brokerData?.arbitragefund || null,
+    propFund: brokerData?.propfund || null,
+    interest: brokerData?.intrest || null,
+    sharing: brokerData?.shares || null,
+    costPerCr: brokerData?.costPerCr || null,
   };
 
   const handleSubmit = async (values, { resetForm }) => {
     try {
-      await api.post("/createBroker", values);
-      toast.success("Broker added successfully.");
+      if (values.id) {
+        await api.put(`/updateBroker/${values.id}`, values);
+        toast.success("Broker updated successfully.");
+      } else {
+        console.log(values);
+        await api.post("/createBroker", values);
+        toast.success("Broker added successfully.");
+      }
       onFormSubmit();
       resetForm();
-      handleClose(); // Close the modal after successful submission
+      handleClose();
     } catch (error) {
-      toast.error("Error adding broker.");
+      console.log(error?.response?.data);
+      toast.error(error?.response?.data?.detail);
     }
   };
 
@@ -47,6 +68,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit }) => {
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: 600,
+          height: 560,
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
@@ -55,13 +77,14 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit }) => {
         }}
       >
         <Typography variant="h6" sx={{ marginBottom: "20px" }}>
-          Add Broker
+          {initialValues.id ? "Update Broker" : "Add Broker"}
         </Typography>
 
         <Formik
           initialValues={initialValues}
           validationSchema={brokerValidationSchema}
           onSubmit={handleSubmit}
+          enableReinitialize
         >
           {({
             values,
@@ -77,7 +100,14 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit }) => {
                   name="brokerName"
                   label="Broker Name"
                   value={values.brokerName}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    handleChange({
+                      target: {
+                        name: e.target.name,
+                        value: e.target.value.toUpperCase(),
+                      },
+                    })
+                  }
                   onBlur={handleBlur}
                   error={touched.brokerName && Boolean(errors.brokerName)}
                   helperText={touched.brokerName && errors.brokerName}
@@ -86,12 +116,9 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit }) => {
                 />
                 <TextField
                   name="grossFund"
-                  label="Gross Fund"
+                  label="Gross Fund (1Cr)"
                   value={values.grossFund}
-                  onChange={(e) => {
-                    const numericValue = e.target.value.replace(/[^0-9]/g, "");
-                    setFieldValue("grossFund", numericValue);
-                  }}
+                  onChange={handleChange}
                   onBlur={handleBlur}
                   error={touched.grossFund && Boolean(errors.grossFund)}
                   helperText={touched.grossFund && errors.grossFund}
@@ -100,12 +127,9 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit }) => {
                 />
                 <TextField
                   name="arbitrageFund"
-                  label="Arbitrage Fund"
+                  label="Arbitrage Fund (1Cr)"
                   value={values.arbitrageFund}
-                  onChange={(e) => {
-                    const numericValue = e.target.value.replace(/[^0-9]/g, "");
-                    setFieldValue("arbitrageFund", numericValue);
-                  }}
+                  onChange={handleChange}
                   onBlur={handleBlur}
                   error={touched.arbitrageFund && Boolean(errors.arbitrageFund)}
                   helperText={touched.arbitrageFund && errors.arbitrageFund}
@@ -114,20 +138,51 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit }) => {
                 />
                 <TextField
                   name="propFund"
-                  label="Prop Fund"
+                  label="Prop Fund (1Cr)"
                   value={values.propFund}
-                  onChange={(e) => {
-                    const numericValue = e.target.value.replace(/[^0-9]/g, "");
-                    setFieldValue("propFund", numericValue);
-                  }}
+                  onChange={handleChange}
                   onBlur={handleBlur}
                   error={touched.propFund && Boolean(errors.propFund)}
                   helperText={touched.propFund && errors.propFund}
                   fullWidth
                   margin="normal"
                 />
+                <div className="flex gap-2">
+                  <TextField
+                    name="interest"
+                    label="Interest (PA) %"
+                    value={values.interest}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.interest && Boolean(errors.interest)}
+                    helperText={touched.interest && errors.interest}
+                    fullWidth
+                    margin="normal"
+                  />
+                  <TextField
+                    name="sharing"
+                    label="Sharing (Base) %"
+                    value={values.sharing}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.sharing && Boolean(errors.sharing)}
+                    helperText={touched.sharing && errors.sharing}
+                    fullWidth
+                    margin="normal"
+                  />
+                  <TextField
+                    name="costPerCr"
+                    label="Cost (Per Cr)"
+                    value={values.costPerCr}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.costPerCr && Boolean(errors.costPerCr)}
+                    helperText={touched.costPerCr && errors.costPerCr}
+                    fullWidth
+                    margin="normal"
+                  />
+                </div>
               </div>
-
               <div style={{ marginTop: "20px" }}>
                 <Button
                   variant="contained"
@@ -138,7 +193,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit }) => {
                   Cancel
                 </Button>
                 <Button type="submit" variant="contained" color="primary">
-                  Add Broker
+                  {initialValues.id ? "Update Broker" : "Add Broker"}
                 </Button>
               </div>
             </Form>

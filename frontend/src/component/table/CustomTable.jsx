@@ -9,29 +9,30 @@ import {
   Paper,
   TablePagination,
   TableSortLabel,
+  CircularProgress,
 } from "@mui/material";
 import { Button } from "@nextui-org/react";
 
-const CustomTable = ({ title = [], tableData = [], renderAction }) => {
-  // State for pagination
+const CustomTable = ({
+  title = [],
+  columnWidths = [], // Dynamic column widths
+  tableData = [],
+  renderAction,
+  loading,
+}) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
-  // State for sorting
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
 
-  // Handle page change
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
-  // Handle rows per page change
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
-  // Handle sorting
   const handleSort = (columnKey) => {
     setSortConfig((prevConfig) => {
       const isAscending =
@@ -43,7 +44,6 @@ const CustomTable = ({ title = [], tableData = [], renderAction }) => {
     });
   };
 
-  // Sort data based on the sort configuration
   const sortedData = React.useMemo(() => {
     if (!sortConfig.key) return tableData;
     return [...tableData].sort((a, b) => {
@@ -57,7 +57,6 @@ const CustomTable = ({ title = [], tableData = [], renderAction }) => {
     });
   }, [tableData, sortConfig]);
 
-  // Paginate the sorted data
   const paginatedData = sortedData.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
@@ -72,67 +71,105 @@ const CustomTable = ({ title = [], tableData = [], renderAction }) => {
   };
 
   return (
-    <TableContainer component={Paper} className="custom">
-      <Table>
-        {/* Table Header with Sorting */}
-        <TableHead>
-          <TableRow>
-            {title.map((header, index) => (
-              <TableCell key={index} align="center" sx={{ fontWeight: "bold" }}>
-                <TableSortLabel
-                  active={sortConfig.key === header.toLowerCase()}
-                  direction={
-                    sortConfig.key === header.toLowerCase()
-                      ? sortConfig.direction
-                      : "asc"
-                  }
-                  onClick={() => handleSort(header.toLowerCase())}
+    <Paper className="custom">
+      <TableContainer>
+        <Table className="tble-custom">
+          <TableHead>
+            <TableRow>
+              {title.map((header, index) => (
+                <TableCell
+                  key={index}
+                  align="center"
+                  sx={{
+                    fontWeight: "bold",
+                    width: columnWidths[index] || "auto", // Set fixed width if provided
+                    minWidth: columnWidths[index] || 150, // Prevent shrinking
+                    maxWidth: columnWidths[index] || 300, // Optional: Limit max width
+                  }}
                 >
-                  {header}
-                </TableSortLabel>
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-
-        {/* Table Body */}
-        <TableBody>
-          {paginatedData.map((rowData, rowIndex) => (
-            <TableRow key={rowIndex}>
-              {Object.keys(rowData).map((key, colIndex) => {
-                // Skip specific keys dynamically
-                
-                if (["status", "id", "brokerId", "fundAllocated", "Record Id"].includes(key)) return null;
-                return (
-                  <TableCell key={`${rowIndex}-${colIndex}`} align="center">
-                    {key === "action" && renderAction ? (
-                      <Button
-                        isDisabled={rowData["status"] === 3}
-                        onPress={() =>
-                          handleButtonClick(rowData["status"], rowData["id"])
-                        }
-                      >
-                        {rowData["status"] === 1 ? "Release" : "Released"}
-                      </Button>
-                    ) : (
-                      rowData[key]
-                    )}
-                  </TableCell>
-                );
-              })}
+                  <TableSortLabel
+                    active={sortConfig.key === header.toLowerCase()}
+                    direction={
+                      sortConfig.key === header.toLowerCase()
+                        ? sortConfig.direction
+                        : "asc"
+                    }
+                    onClick={() => handleSort(header.toLowerCase())}
+                  >
+                    {header}
+                  </TableSortLabel>
+                </TableCell>
+              ))}
             </TableRow>
-          ))}
-          {
-            paginatedData && paginatedData.length === 0 && (
-              <TableRow style={{ textAlign: 'center' }}>
-                <TableCell colSpan={title.length} className="middle-noData">No data found.</TableCell>
-              </TableRow>
-            )
-          }
-        </TableBody>
-      </Table>
+          </TableHead>
 
-      {/* Pagination Controls */}
+          <TableBody>
+            {loading && (
+              <TableRow>
+                <TableCell colSpan={title.length} className="middle-noData">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            )}
+            {paginatedData.map((rowData, rowIndex) => (
+              <TableRow key={rowIndex}>
+                {Object.keys(rowData).map((key, colIndex) => {
+                  if (
+                    [
+                      "status",
+                      "id",
+                      "brokerId",
+                      "fundAllocated",
+                      "Record Id",
+                    ].includes(key)
+                  )
+                    return null;
+                  return (
+                    <TableCell
+                      key={`${rowIndex}-${colIndex}`}
+                      align="center"
+                      sx={{
+                        width: columnWidths[colIndex] || "auto", // Use dynamic width
+                        minWidth: columnWidths[colIndex] || 150, // Prevent shrinking
+                        maxWidth: columnWidths[colIndex] || 300, // Optional: Limit max width
+                        whiteSpace: "nowrap", // Prevent text wrapping
+                        overflow: "hidden",
+                        textOverflow: "ellipsis", // Ellipsis for overflow text
+                      }}
+                    >
+                      {key === "action" && renderAction ? (
+                        <Button
+                          isDisabled={rowData["status"] === 3}
+                          onPress={() =>
+                            handleButtonClick(rowData["status"], rowData["id"])
+                          }
+                        >
+                          {rowData["status"] === 1 ? "Release" : "Released"}
+                        </Button>
+                      ) : (
+                        rowData[key]
+                      )}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+            {!loading && paginatedData && paginatedData.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={title.length}
+                  className="middle-noData"
+                  align="center"
+                >
+                  No data found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Pagination at the end */}
       <TablePagination
         component="div"
         count={tableData.length}
@@ -142,7 +179,7 @@ const CustomTable = ({ title = [], tableData = [], renderAction }) => {
         onRowsPerPageChange={handleChangeRowsPerPage}
         rowsPerPageOptions={[5, 10, 15]}
       />
-    </TableContainer>
+    </Paper>
   );
 };
 
