@@ -33,8 +33,8 @@ const brokerTableTitle = [
   "GrossFund",
   "ArbitrageFund",
   "PropFund",
-  "Interest",
-  "Sharing",
+  // "Interest",
+  // "Sharing",
   "CostPerCr",
   "Total Fund",
   "Start Date",
@@ -56,15 +56,36 @@ const AdminSettings = () => {
       if (response.status === 200) {
         const formattedData = response.data?.data?.map((broker) => ({
           "Broker Name": broker.brokerName,
-          "Gross Fund": broker.grossfund || "-",
-          "Arbitrage Fund": broker.arbitragefund || "-",
-          "Prop Fund": broker.propfund || "-",
-          "Intrest": broker.intrest || "-",
-          "shares": broker.shares || "-",
-          "costPerCr": broker.costPerCr || "-",
-          "Total Fund": broker.grossfund + broker.arbitragefund || "-",
+          "Gross Fund":
+            broker.grossFund !== undefined
+              ? `I ${broker.grossFundInterest} | F ${broker.grossFund} | S ${broker.grossFundSharing}`
+              : "-",
+
+          // Arbitrage Fund (Merged: Fund | Interest | Sharing)
+          "Arbitrage Fund":
+            broker.arbitrageFund !== undefined
+              ? `I ${broker.arbitrageFundInterest} | F ${broker.arbitrageFund} | S ${broker.arbitrageFundSharing}`
+              : "-",
+
+          // Prop Fund (Merged: Fund | Interest | Sharing)
+          "Prop Fund":
+            broker.propFund !== undefined
+              ? `I ${broker.propFundInterest} | F ${broker.propFund} | S ${broker.propFundSharing}`
+              : "-",
+
+          "Cost Per Cr": broker.costPerCr || "-",
+
+          // Total Fund Calculation (Summing all fund values)
+          "Total Fund":
+            broker.grossFund !== undefined &&
+            broker.arbitrageFund !== undefined &&
+            broker.propFund !== undefined
+              ? broker.grossFund + broker.arbitrageFund + broker.propFund
+              : "-",
+
           "Start Date": broker.startDate || "-",
           "Release Date": broker.releaseDate || "-",
+
           Action: (
             <Dropdown>
               <DropdownTrigger>
@@ -103,8 +124,8 @@ const AdminSettings = () => {
     if (action === "release") {
       releaseBroker(broker);
     } else if (action === "edit") {
-      setSelectedBroker(broker); 
-      setAnchorEl(document.body); 
+      setSelectedBroker(broker);
+      setAnchorEl(document.body);
     }
   };
 

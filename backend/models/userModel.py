@@ -6,21 +6,43 @@ from config.dbconnection import engine, base
 base = base
 
 class Brokers(base):
-    __tablename__ = 'brokers'
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    # New column names as per the given structure
-    brokerName = Column(String(50), nullable=False)
-    grossFund = Column(Integer)  # Renamed 'grossfund'
-    arbitrageFund = Column(Integer)  # Renamed 'arbitragefund'
-    propFund = Column(Integer)  # Renamed 'propfund'
-    interest = Column(Float, nullable=True)  # Assuming a calculation for Interest
-    sharing = Column(Float, nullable=True)  # Assuming a calculation for Sharing
-    costPerCr = Column(Float, nullable=True)  # Assuming a calculation for CostPerCr
-    totalFund = Column(Integer, nullable=True)  # Total fund calculation can be added here
-    brokerStatus = Column(Integer, ForeignKey("status.id"), nullable=False, default=1)
+    __tablename__ = "brokers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    brokerName = Column(String, nullable=False)
+    grossFund = Column(Integer, default=0)
+    grossFundInterest = Column(Float, default=0.0)
+    grossFundSharing = Column(Float, default=0.0)
+    arbitrageFund = Column(Integer, default=0)
+    arbitrageFundInterest = Column(Float, default=0.0)
+    arbitrageFundSharing = Column(Float, default=0.0)
+    propFund = Column(Integer, default=0)
+    propFundInterest = Column(Float, default=0.0)
+    propFundSharing = Column(Float, default=0.0)
+    costPerCr = Column(Float, default=0.0)
+    totalFund = Column(Integer, default=0)
     releaseDate = Column(DateTime, nullable=True)
+    brokerStatus = Column(Integer, ForeignKey("status.id"), nullable=False, default=1)
     createAt = Column(DateTime, index=True, default=datetime.now)
     updatedAt = Column(DateTime, index=True, default=datetime.now)
+
+
+# class Brokers(base):
+#     __tablename__ = 'brokers'
+#     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+#     # New column names as per the given structure
+#     brokerName = Column(String(50), nullable=False)
+#     grossFund = Column(Integer)  # Renamed 'grossfund'
+#     arbitrageFund = Column(Integer)  # Renamed 'arbitragefund'
+#     propFund = Column(Integer)  # Renamed 'propfund'
+#     interest = Column(Float, nullable=True)  # Assuming a calculation for Interest
+#     sharing = Column(Float, nullable=True)  # Assuming a calculation for Sharing
+#     costPerCr = Column(Float, nullable=True)  # Assuming a calculation for CostPerCr
+#     totalFund = Column(Integer, nullable=True)  # Total fund calculation can be added here
+#     brokerStatus = Column(Integer, ForeignKey("status.id"), nullable=False, default=1)
+#     releaseDate = Column(DateTime, nullable=True)
+#     createAt = Column(DateTime, index=True, default=datetime.now)
+#     updatedAt = Column(DateTime, index=True, default=datetime.now)
     
 class Ids(base):
     __tablename__ = "ids"

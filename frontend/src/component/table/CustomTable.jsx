@@ -15,7 +15,7 @@ import { Button } from "@nextui-org/react";
 
 const CustomTable = ({
   title = [],
-  columnWidths = [], // Dynamic column widths
+  columnWidths = [],
   tableData = [],
   renderAction,
   loading,
@@ -24,10 +24,7 @@ const CustomTable = ({
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
+  const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
@@ -76,30 +73,54 @@ const CustomTable = ({
         <Table className="tble-custom">
           <TableHead>
             <TableRow>
-              {title.map((header, index) => (
-                <TableCell
-                  key={index}
-                  align="center"
-                  sx={{
-                    fontWeight: "bold",
-                    width: columnWidths[index] || "auto", // Set fixed width if provided
-                    minWidth: columnWidths[index] || 150, // Prevent shrinking
-                    maxWidth: columnWidths[index] || 300, // Optional: Limit max width
-                  }}
-                >
-                  <TableSortLabel
-                    active={sortConfig.key === header.toLowerCase()}
-                    direction={
-                      sortConfig.key === header.toLowerCase()
-                        ? sortConfig.direction
-                        : "asc"
-                    }
-                    onClick={() => handleSort(header.toLowerCase())}
+              {title.map((header, index) => {
+                // Merge "Gross Fund" if it exists
+                if (header === "Gross Fund") {
+                  return (
+                    <TableCell
+                      key="grossFund"
+                      align="center"
+                      sx={{ fontWeight: "bold", minWidth: 200, maxWidth: 300 }}
+                    >
+                      <TableSortLabel
+                        active={sortConfig.key === "grossFund"}
+                        direction={
+                          sortConfig.key === "grossFund"
+                            ? sortConfig.direction
+                            : "asc"
+                        }
+                        onClick={() => handleSort("grossFund")}
+                      >
+                        Gross Fund (Fund | Interest | Sharing)
+                      </TableSortLabel>
+                    </TableCell>
+                  );
+                }
+                return (
+                  <TableCell
+                    key={index}
+                    align="center"
+                    sx={{
+                      fontWeight: "bold",
+                      width: columnWidths[index] || "auto",
+                      minWidth: columnWidths[index] || 150,
+                      maxWidth: columnWidths[index] || 300,
+                    }}
                   >
-                    {header}
-                  </TableSortLabel>
-                </TableCell>
-              ))}
+                    <TableSortLabel
+                      active={sortConfig.key === header.toLowerCase()}
+                      direction={
+                        sortConfig.key === header.toLowerCase()
+                          ? sortConfig.direction
+                          : "asc"
+                      }
+                      onClick={() => handleSort(header.toLowerCase())}
+                    >
+                      {header}
+                    </TableSortLabel>
+                  </TableCell>
+                );
+              })}
             </TableRow>
           </TableHead>
 
@@ -124,17 +145,37 @@ const CustomTable = ({
                     ].includes(key)
                   )
                     return null;
+
+                  // Merge "Gross Fund" columns dynamically
+                  if (key === "grossFund") {
+                    return (
+                      <TableCell
+                        key={`${rowIndex}-grossFund`}
+                        align="center"
+                        sx={{
+                          minWidth: 200,
+                          maxWidth: 300,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {`${rowData["grossFund"]} | ${rowData["grossFundInterest"]} | ${rowData["grossFundSharing"]}`}
+                      </TableCell>
+                    );
+                  }
+
                   return (
                     <TableCell
                       key={`${rowIndex}-${colIndex}`}
                       align="center"
                       sx={{
-                        width: columnWidths[colIndex] || "auto", // Use dynamic width
-                        minWidth: columnWidths[colIndex] || 150, // Prevent shrinking
-                        maxWidth: columnWidths[colIndex] || 300, // Optional: Limit max width
-                        whiteSpace: "nowrap", // Prevent text wrapping
+                        width: columnWidths[colIndex] || "auto",
+                        minWidth: columnWidths[colIndex] || 150,
+                        maxWidth: columnWidths[colIndex] || 300,
+                        whiteSpace: "nowrap",
                         overflow: "hidden",
-                        textOverflow: "ellipsis", // Ellipsis for overflow text
+                        textOverflow: "ellipsis",
                       }}
                     >
                       {key === "action" && renderAction ? (
@@ -154,7 +195,7 @@ const CustomTable = ({
                 })}
               </TableRow>
             ))}
-            {!loading && paginatedData && paginatedData.length === 0 && (
+            {!loading && paginatedData.length === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={title.length}
@@ -169,7 +210,6 @@ const CustomTable = ({
         </Table>
       </TableContainer>
 
-      {/* Pagination at the end */}
       <TablePagination
         component="div"
         count={tableData.length}

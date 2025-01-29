@@ -44,7 +44,7 @@ async def createTable(session: Session = Depends(get_db)):
             role_count = (session.execute(select(userRole))).scalars().all()
             if not role_count:
                 # Insert initial data
-                roleData = ["Admin", "Employee"]
+                roleData = ["Admin", "Dealer", "Trader"]
                 for role in roleData:
                     roleDatacommit = userRole(roleName=role)
                     session.add(roleDatacommit)
@@ -272,8 +272,9 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     if not existing_user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    existing_user.userStatus = 2  # Set user status to Deactive
+    
     try:
-        db.delete(existing_user)  # Delete the user record
         db.commit()  # Commit the deletion
         return {"message": "User deleted successfully"}
     except exc.SQLAlchemyError as e:
@@ -446,11 +447,11 @@ async def get_users(
 
 @app.post("/createBroker")
 async def create_broker(
-    response: dict,  # Properly typed the response
+    response: dict,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
-    # Authorization check - Role should be 1 (admin or any other privileged role)
+    # Authorization Check - Only Admin (role = 1) can create a broker
     if current_user.role != 1:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
@@ -466,35 +467,46 @@ async def create_broker(
     if existing_broker:
         raise HTTPException(status_code=400, detail="The broker name is already active")
 
-    # Extract and calculate necessary fields from the response
+    # Extract and Convert Fields
     gross_fund = int(response.get("grossFund", 0))
-    arbitrage_fund = int(response.get("arbitrageFund", 0))
-    prop_fund = int(response.get("propFund", 0))
+    gross_fund_interest = float(response.get("grossFundInterest", 0))
+    gross_fund_sharing = float(response.get("grossFundSharing", 0))
 
-    # Assuming these are calculations for the new fields
-    interest = response.get("interest", 0)
-    sharing = response.get("sharing")
-    cost_per_cr = response.get("costPerCr")
+    arbitrage_fund = int(response.get("arbitrageFund", 0))
+    arbitrage_fund_interest = float(response.get("arbitrageFundInterest", 0))
+    arbitrage_fund_sharing = float(response.get("arbitrageFundSharing", 0))
+
+    prop_fund = int(response.get("propFund", 0))
+    prop_fund_interest = float(response.get("propFundInterest", 0))
+    prop_fund_sharing = float(response.get("propFundSharing", 0))
+
+    cost_per_cr = float(response.get("costPerCr", 0))
+
+    # Calculate Total Fund
     total_fund = gross_fund + arbitrage_fund + prop_fund
 
-    # Create broker instance
-    create_broker = Brokers(
+    # Create Broker Entry
+    new_broker = Brokers(
         brokerName=broker_name,
         grossFund=gross_fund,
+        grossFundInterest=gross_fund_interest,
+        grossFundSharing=gross_fund_sharing,
         arbitrageFund=arbitrage_fund,
+        arbitrageFundInterest=arbitrage_fund_interest,
+        arbitrageFundSharing=arbitrage_fund_sharing,
         propFund=prop_fund,
-        interest=interest,
-        sharing=sharing,
+        propFundInterest=prop_fund_interest,
+        propFundSharing=prop_fund_sharing,
         costPerCr=cost_per_cr,
         totalFund=total_fund,
     )
 
     try:
-        db.add(create_broker)
+        db.add(new_broker)
         db.commit()
         return {"message": "Broker created successfully"}
     except exc.SQLAlchemyError as e:
-        db.rollback()  # Rollback the transaction if there is a database error
+        db.rollback()  # Rollback if there is a database error
         print("Database Error:", e)
         raise HTTPException(status_code=500, detail="Database error")
     except Exception as err:
@@ -667,6 +679,7 @@ async def getBroker(
     current_user: UserResponse = Depends(get_current_user),
 ):
     try:
+        # Fetch brokers based on status
         if status is None:
             brokerData = db.query(Brokers).all()
         else:
@@ -676,17 +689,23 @@ async def getBroker(
                 .order_by(desc(Brokers.createAt))
                 .all()
             )
+
+        # Prepare output data
         outPut = []
         for datas in brokerData:
             outPut.append(
                 {
                     "id": datas.id,
                     "brokerName": datas.brokerName,
-                    "grossfund": datas.grossFund,
-                    "arbitragefund": datas.arbitrageFund,
-                    "propfund": datas.propFund,
-                    "intrest": datas.interest,
-                    "shares": datas.sharing,
+                    "grossFund": datas.grossFund,
+                    "grossFundInterest": datas.grossFundInterest,
+                    "grossFundSharing": datas.grossFundSharing,
+                    "arbitrageFund": datas.arbitrageFund,
+                    "arbitrageFundInterest": datas.arbitrageFundInterest,
+                    "arbitrageFundSharing": datas.arbitrageFundSharing,
+                    "propFund": datas.propFund,
+                    "propFundInterest": datas.propFundInterest,
+                    "propFundSharing": datas.propFundSharing,
                     "costPerCr": datas.costPerCr,
                     "startDate": datas.createAt.strftime("%Y-%m-%d %H:%M:%S"),
                     "status": datas.brokerStatus,
@@ -697,12 +716,12 @@ async def getBroker(
                     ),
                 }
             )
+
         return {"message": "Brokers fetched successfully", "data": outPut}
 
     except Exception as e:
-        print("error in getBrokerApi", e)
-        return {"message": "Internal server error"}
-
+        print("Error in getBroker API:", e)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.put("/releaseBroker/{id}/{status}")
 async def relaseBroker(

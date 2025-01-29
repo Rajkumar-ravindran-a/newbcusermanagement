@@ -114,8 +114,9 @@ const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
                   }
                 }}
               >
-                <DropdownItem key="update">Update Employee</DropdownItem>
-                <DropdownItem key="delete">Delete Employee</DropdownItem>
+                {console.log("Action menu "  + user.userStatus)}
+                <DropdownItem key="update" isDisabled={user.userStatus === "Deactive"}>Update Employee</DropdownItem>
+                <DropdownItem key="delete" isDisabled={user.userStatus === "Deactive"}>Delete Employee</DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>

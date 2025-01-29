@@ -59,6 +59,7 @@ const AdminSettings = () => {
   const [getUserList, setGetUserList] = useState([]);
   const [selectedBroker, setSelectedBroker] = useState(null);
   const [loader, setLoader] = useState(false);
+  const [idType] = useState(["Manual-ODIN", "Manual-GREEK", "Manual-XTS", "Convex", "XTS-API"]);
 
   const getBrokerData = async () => {
     try {
@@ -373,17 +374,31 @@ const AdminSettings = () => {
                     error={touched.nism && Boolean(errors.nism)}
                     helperText={touched.nism && errors.nism}
                   />
-                  <TextField
+                   <FormControl
                     fullWidth
                     margin="normal"
-                    name="idType"
-                    label="ID Type"
-                    value={values.idType || ""}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
                     error={touched.idType && Boolean(errors.idType)}
-                    helperText={touched.idType && errors.idType}
-                  />
+                  >
+                    <InputLabel id="IDType">ID Type</InputLabel>
+                    <Select
+                      labelId="IDType"
+                      id="IDType"
+                      name="idType"
+                      label="ID Type"
+                      value={values.idType || ""}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    >
+                      {idType !== undefined && idType?.map((data, index) => (
+                        <MenuItem key={index} value={data}>
+                          {data}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {touched.idType && Boolean(errors.idType) && (
+                      <FormHelperText>{errors.idType}</FormHelperText>
+                    )}
+                  </FormControl>
                 </div>
                 <div className="flex justify-end gap-4 mt-6">
                   <Button

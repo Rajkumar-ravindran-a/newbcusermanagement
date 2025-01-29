@@ -140,6 +140,24 @@ const Dashboard = () => {
     }
   };
 
+  const handleDelete = async (user) => {
+      try{
+        const response = await api.delete(`/deleteUser/${user}`, {
+          headers: {
+            Authorization: `bearer ${token}`,
+          },
+        });
+        if(response.status === 200){
+          toast.success("User deleted successfully");
+          getAllUsers();
+        }
+      }
+      catch(error){
+        console.error("Error deleting user:", error);
+        toast.error("Error deleting user.");
+      }
+  }
+
   return (
     <AdminLayout pageTitle="All users" pageSubtitle="Manage user details">
       <ModelPoper open={modelPopup} handleClose={() => setModelPopup(false)}>
@@ -292,7 +310,8 @@ const Dashboard = () => {
           </div>
           <TableComponent
             Userdata={filteredUsers}
-            onUpdateClick={(user) => handleModelPopup(user)} // Pass user data to update
+            onUpdateClick={(user) => handleModelPopup(user)} 
+            onDeleteClick={(user) => handleDelete(user)}
           />
         </div>
       </Card>
