@@ -47,7 +47,7 @@ class Brokers(base):
 class Ids(base):
     __tablename__ = "ids"
     recordId = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    idNumber = Column(String(50), unique=True, index=True, nullable=False)
+    idNumber = Column(String(50), index=True, nullable=False)
     brokerId = Column(Integer, nullable=False)
     emloyeeId = Column(Integer, ForeignKey("users.id"), nullable=False)
     idType = Column(String(50), nullable=False)
@@ -69,7 +69,6 @@ class Status(base):
     __tablename__ = "status"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     statusName = Column(String(50), index=True, nullable=False)
-
 
 class Users(base):
     __tablename__ = "users"

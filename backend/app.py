@@ -560,6 +560,18 @@ async def createId(
 
     print(response)
 
+    existing_id = (
+        db.query(Ids)
+        .filter(
+            Ids.idNumber == response.id,
+            Ids.idStatus != 3,
+        )
+        .first()
+    )
+    
+    if existing_id:
+        raise HTTPException(status_code=400, detail="ID already exists")
+    
     createId = Ids(
         idNumber=response.id,
         brokerId=response.brokerName,
@@ -735,8 +747,13 @@ async def relaseBroker(
 
         if brokerData is None:
             raise HTTPException(status_code=404, detail="Broker not found")
-
-        print(status)
+        
+        ids = db.query(Ids).filter(Ids.brokerId == brokerData.id).all()
+        if ids:
+            for id in ids:
+                id.idStatus = status
+                id.releaseDate = datetime.now()
+                id.updatedAt = datetime.now()
 
         brokerData.brokerStatus = status
         brokerData.releaseDate = datetime.now()

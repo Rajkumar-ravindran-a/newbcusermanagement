@@ -87,7 +87,7 @@ const Dashboard = () => {
         lastName: user.lastName,
         email: user.email,
         phonenumber: user.phoneNumber,
-        role: user.role === "Dealer" ? 2 : 0,
+        role: user.role === "Dealer" ? 2 : 3,
         password: "", // Password is optional during update
       });
       setIsUpdate(true); // Indicate update mode

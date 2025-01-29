@@ -120,7 +120,8 @@ const AdminSettings = () => {
       }
     } catch (error) {
       setLoader(false);
-      toast.error("Error fetching ID data.");
+      console.error(error);
+      // toast.error("Error fetching ID data.");
     }
   };
 
@@ -152,7 +153,8 @@ const AdminSettings = () => {
         setGetUserList(response.data);
       }
     } catch (error) {
-      toast.error("Error fetching user data.");
+      console.error(error);
+      // toast.error("Error fetching user data.");
     }
   };
 
@@ -185,7 +187,8 @@ const AdminSettings = () => {
       resetForm();
       handleClose();
     } catch (error) {
-      toast.error("Error saving broker.");
+      console.error(error?.response?.data?.detail);
+      toast.error(error?.response?.data?.detail);
     }
   };
 
