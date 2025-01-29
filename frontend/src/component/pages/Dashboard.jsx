@@ -87,7 +87,7 @@ const Dashboard = () => {
         lastName: user.lastName,
         email: user.email,
         phonenumber: user.phoneNumber,
-        role: user.role === "Employee" ? 2 : 0,
+        role: user.role === "Dealer" ? 2 : 0,
         password: "", // Password is optional during update
       });
       setIsUpdate(true); // Indicate update mode
@@ -239,7 +239,8 @@ const Dashboard = () => {
                     label="Role"
                     onChange={(event) => setFieldValue("role", event.target.value)} // Correctly handle role update
                   >
-                    <MenuItem value="2">Employee</MenuItem>
+                    <MenuItem value="2">Dealer</MenuItem>
+                    <MenuItem value="3">Trader</MenuItem>
                     {/* Add more roles if needed */}
                   </Field>
                 </FormControl>
