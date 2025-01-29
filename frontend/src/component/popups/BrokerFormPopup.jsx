@@ -119,19 +119,23 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
           onSubmit={handleSubmit}
           enableReinitialize
         >
-          {({ values, errors, touched, handleChange, handleBlur }) => (
+          {({ values, errors, touched, handleChange, handleBlur, setFieldValue }) => (
             <Form>
               <div className="flex flex-col gap-4">
                 {/* Broker Name */}
                 <TextField
                   name="brokerName"
                   label="Broker Name"
-                  value={values.brokerName}
-                  onChange={handleChange}
+                  value={values.brokerName} // Force uppercase
+                  onChange={(e) => {
+                    const uppercaseValue = e.target.value.toUpperCase();
+                    setFieldValue("brokerName", uppercaseValue); // Set uppercase value in Formik
+                  }}
                   onBlur={handleBlur}
                   error={touched.brokerName && Boolean(errors.brokerName)}
                   helperText={touched.brokerName && errors.brokerName}
                   fullWidth
+                  inputProps={{ style: { textTransform: "uppercase" } }} // Ensure UI displays uppercase
                 />
 
                 {/* Gross Fund */}
@@ -186,10 +190,10 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     value={values.arbitrageFund}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    error={touched.arbitrageFund && Boolean(errors.arbitrageFund)}
-                    helperText={
-                      touched.arbitrageFund && errors.arbitrageFund
+                    error={
+                      touched.arbitrageFund && Boolean(errors.arbitrageFund)
                     }
+                    helperText={touched.arbitrageFund && errors.arbitrageFund}
                     fullWidth
                   />
                   <TextField
@@ -245,7 +249,8 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={
-                      touched.propFundInterest && Boolean(errors.propFundInterest)
+                      touched.propFundInterest &&
+                      Boolean(errors.propFundInterest)
                     }
                     helperText={
                       touched.propFundInterest && errors.propFundInterest
