@@ -25,6 +25,7 @@ import { toast } from "react-toastify";
 import api from "../../config/AxiosCofig.js";
 import AdminLayout from "../layouts/AdminLayout";
 import { IoMdAddCircleOutline } from "react-icons/io";
+import { jwtDecode } from "jwt-decode";
 
 const dateConversion = (dateString) => {
   const mysqlDatetime = new Date(dateString)
@@ -43,6 +44,10 @@ const DataManagement = () => {
   const [modelPopup, setModelPopup] = useState(false);
 
   const token = localStorage.getItem("token");
+
+  const decode = jwtDecode(token)
+
+  console.log(decode)
 
   const fetchTrade = async () => {
     const tradeData = await api.get("/getTrade", {
@@ -121,7 +126,7 @@ const DataManagement = () => {
       .positive("Must be positive"),
     sellValue: Yup.number().required("Sell Value is required"),
     dealer: Yup.string().required("Dealer is required"),
-    pl: Yup.string().required("P/L is required"),
+    pl: Yup.number().required("P/L is required"),
   });
 
   const initialValues = {
@@ -133,8 +138,8 @@ const DataManagement = () => {
     counter: "",
     buyValue: "",
     sellValue: "",
-    dealer: "",
-    pl: "",
+    dealer: decode.fullName,
+    pl: 0,
   };
 
   const handleSubmit = async (values) => {
@@ -166,121 +171,146 @@ const DataManagement = () => {
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
         >
-          {({ values, errors, touched, setFieldValue }) => (
-            <Form>
-              <div className="flex gap-3 mb-3">
-                <FormControl fullWidth>
-                  <InputLabel>Broker</InputLabel>
-                  <Select
-                    name="broker"
-                    value={values.brokerId} // Store only brokerId
-                    label="Broker"
+          {({ values, errors, touched, setFieldValue }) => {
+            // Function to calculate P/L
+            const calculatePL = (buyValue, sellValue) => sellValue - buyValue;
+
+            return (
+              <Form>
+                <div className="flex gap-3 mb-3">
+                  <FormControl fullWidth>
+                    <InputLabel>Broker</InputLabel>
+                    <Select
+                      name="broker"
+                      value={values.brokerId} // Store only brokerId
+                      label="Broker"
+                      onChange={(e) => {
+                        const selectedBroker = brokerList.find(
+                          (b) => b.id === e.target.value
+                        );
+                        setFieldValue("brokerId", selectedBroker?.id || "");
+                        setFieldValue(
+                          "broker",
+                          selectedBroker?.brokerName || ""
+                        );
+                        fetchBrokerById(selectedBroker?.id);
+                      }}
+                      error={touched.broker && Boolean(errors.broker)}
+                    >
+                      {brokerList.map((value) => (
+                        <MenuItem key={value.id} value={value.id}>
+                          {value.brokerName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>ID</InputLabel>
+                    <Select
+                      name="tradeId"
+                      label="Id"
+                      value={values.tradeId}
+                      onChange={(e) => setFieldValue("tradeId", e.target.value)}
+                      error={touched.tradeId && Boolean(errors.tradeId)}
+                    >
+                      {brokerId.map((value, index) => (
+                        <MenuItem key={index} value={value.idNumber}>
+                          {value.idNumber}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </div>
+                <div className="flex gap-2 mb-3">
+                  <TextField
+                    fullWidth
+                    name="dealer"
+                    label="Dealer"
+                    value={values.dealer}
+                    onChange={(e) => setFieldValue("dealer", e.target.value)}
+                    error={touched.dealer && Boolean(errors.dealer)}
+                    helperText={touched.dealer && errors.dealer}
+                    disabled
+                  />
+                  <FormControl fullWidth>
+                    <InputLabel>Strategy</InputLabel>
+                    <Select
+                      name="strategy"
+                      label="Strategy"
+                      value={values.strategy}
+                      onChange={(e) =>
+                        setFieldValue("strategy", e.target.value)
+                      }
+
+                      error={touched.strategy && Boolean(errors.strategy)}
+                    >
+                      <MenuItem value="Strategy 1">Strategy 1</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    fullWidth
+                    name="counter"
+                    label="Margin"
+                    value={values.counter}
+                    onChange={(e) => setFieldValue("counter", e.target.value)}
+                    error={touched.counter && Boolean(errors.counter)}
+                    helperText={touched.counter && errors.counter}
+                  />
+                </div>
+                <div className="flex gap-3 mb-3">
+                  <TextField
+                    fullWidth
+                    name="buyValue"
+                    label="Buy Value"
+                    value={values.buyValue}
+                    type="number"
                     onChange={(e) => {
-                      const selectedBroker = brokerList.find(
-                        (b) => b.id === e.target.value
+                      setFieldValue("buyValue", e.target.value);
+                      setFieldValue(
+                        "pl",
+                        calculatePL(e.target.value, values.sellValue)
                       );
-                      setFieldValue("brokerId", selectedBroker?.id || "");
-                      setFieldValue("broker", selectedBroker?.brokerName || "");
-                      fetchBrokerById(selectedBroker?.id);
                     }}
-                    error={touched.broker && Boolean(errors.broker)}
-                  >
-                    {brokerList.map((value) => (
-                      <MenuItem key={value.id} value={value.id}>
-                        {value.brokerName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth>
-                  <InputLabel>ID</InputLabel>
-                  <Select
-                    name="tradeId"
-                    label="Id"
-                    value={values.tradeId}
-                    onChange={(e) => setFieldValue("tradeId", e.target.value)}
-                    error={touched.tradeId && Boolean(errors.tradeId)}
-                  >
-                    {console.warn(brokerId)}
-                    {brokerId.map((value, index) => (
-                      <MenuItem key={index} value={value.idNumber}>
-                        {value.idNumber}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </div>
-              <div className="flex gap-2 mb-3">
-                <TextField
-                  fullWidth
-                  name="dealer"
-                  label="Dealer"
-                  value={values.dealer}
-                  onChange={(e) => setFieldValue("dealer", e.target.value)}
-                  error={touched.dealer && Boolean(errors.dealer)}
-                  helperText={touched.dealer && errors.dealer}
-                />
-                <FormControl fullWidth>
-                  <InputLabel>Strategy</InputLabel>
-                  <Select
-                    name="strategy"
-                    label="Strategy"
-                    value={values.strategy}
-                    onChange={(e) => setFieldValue("strategy", e.target.value)}
-                    error={touched.strategy && Boolean(errors.strategy)}
-                  >
-                    <MenuItem value="Strategy 1">Strategy 1</MenuItem>
-                  </Select>
-                </FormControl>
-                <TextField
-                  fullWidth
-                  name="counter"
-                  label="Margin"
-                  value={values.counter}
-                  onChange={(e) => setFieldValue("counter", e.target.value)}
-                  error={touched.counter && Boolean(errors.counter)}
-                  helperText={touched.counter && errors.counter}
-                />
-              </div>
-              <div className="flex gap-3 mb-3">
-                <TextField
-                  fullWidth
-                  name="buyValue"
-                  label="Buy Value"
-                  value={values.buyValue}
-                  onChange={(e) => setFieldValue("buyValue", e.target.value)}
-                  error={touched.buyValue && Boolean(errors.buyValue)}
-                  helperText={touched.buyValue && errors.buyValue}
-                />
-                <TextField
-                  fullWidth
-                  name="sellValue"
-                  label="Sell Value"
-                  value={values.sellValue}
-                  onChange={(e) => setFieldValue("sellValue", e.target.value)}
-                  error={touched.sellValue && Boolean(errors.sellValue)}
-                  helperText={touched.sellValue && errors.sellValue}
-                />
-                <TextField
-                  fullWidth
-                  name="pl"
-                  label="P/L"
-                  value={values.pl}
-                  onChange={(e) => setFieldValue("pl", e.target.value)}
-                  error={touched.pl && Boolean(errors.pl)}
-                  helperText={touched.pl && errors.pl}
-                />
-              </div>
-              <div className="flex justify-end gap-3">
-                <Button variant="contained" type="submit">
-                  Submit Data
-                </Button>
-                <Button variant="outlined" onClick={handleClose}>
-                  Cancel
-                </Button>
-              </div>
-            </Form>
-          )}
+                    error={touched.buyValue && Boolean(errors.buyValue)}
+                    helperText={touched.buyValue && errors.buyValue}
+                  />
+                  <TextField
+                    fullWidth
+                    name="sellValue"
+                    label="Sell Value"
+                    type="number"
+                    value={values.sellValue}
+                    onChange={(e) => {
+                      setFieldValue("sellValue", e.target.value);
+                      setFieldValue(
+                        "pl",
+                        calculatePL(values.buyValue, e.target.value)
+                      );
+                    }}
+                    error={touched.sellValue && Boolean(errors.sellValue)}
+                    helperText={touched.sellValue && errors.sellValue}
+                  />
+                  <TextField
+                    fullWidth
+                    name="pl"
+                    label="P/L"
+                    value={values.pl}
+                    error={touched.pl && Boolean(errors.pl)}
+                    helperText={touched.pl && errors.pl}
+                    disabled
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
+                  <Button variant="contained" type="submit">
+                    Submit Data
+                  </Button>
+                  <Button variant="outlined" onClick={handleClose}>
+                    Cancel
+                  </Button>
+                </div>
+              </Form>
+            );
+          }}
         </Formik>
       </ModelPoper>
       <div className="w-full">

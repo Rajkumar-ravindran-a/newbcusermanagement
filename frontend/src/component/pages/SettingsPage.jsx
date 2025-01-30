@@ -37,8 +37,8 @@ const brokerTableTitle = [
   // "Sharing",
   "CostPerCr",
   "Total Fund",
-  "Start Date",
-  "Realease Date",
+  // "Start Date",
+  // "Realease Date",
   "Action",
 ];
 
@@ -83,8 +83,8 @@ const AdminSettings = () => {
               ? broker.grossFund + broker.arbitrageFund + broker.propFund
               : "-",
 
-          "Start Date": broker.startDate || "-",
-          "Release Date": broker.releaseDate || "-",
+          // "Start Date": broker.startDate || "-",
+          // "Release Date": broker.releaseDate || "-",
 
           Action: (
             <Dropdown>
@@ -163,7 +163,7 @@ const AdminSettings = () => {
         className="settings-mainCard"
         style={{ marginTop: "1rem", width: "100%", overflowY: "scroll" }}
       >
-        <div className="flex justify-between p-4 align-middle broker-form">
+        <div className="flex justify-between p-2 align-middle broker-form">
           <TextField
             className="searchUser"
             placeholder="Search"

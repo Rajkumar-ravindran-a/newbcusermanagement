@@ -3,7 +3,7 @@
 .adminLayoutNavbar {
   width: 20%;
   height: 100vh;
-  padding: 2rem 1rem !important;
+  padding: 1.5rem 1rem !important;
 }
 .navmain {
   .nav-logo {
@@ -11,7 +11,7 @@
     h1 {
       margin-left: 1.5rem;
     }
-    margin-bottom: 2rem;
+    margin-bottom: 1.3rem;
   }
   padding: 1rem 1rem !important;
   border-radius: 2rem;
@@ -58,6 +58,8 @@
 .adminLayoutBody {
   margin-top: 1rem;
   width: 80vw;
+  height: 97vh;
+  overflow-y: scroll;
   padding: 1.5rem;
   .authlayoutsubtitle {
     color: color_variables.$text-secondary !important;

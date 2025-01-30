@@ -20,6 +20,7 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  Chip,
 } from "@nextui-org/react";
 
 const statusColorMap = {
@@ -29,12 +30,12 @@ const statusColorMap = {
 };
 
 export const columns = [
+  { name: "Name", key: "name" },
   { name: "User ID", key: "id" },
-  { name: "NAME", key: "name" },
-  { name: "ROLE", key: "role" },
-  { name: "STATUS", key: "userStatus" },
-  {name: "Phone Number", key: "phoneNumber" },
-  { name: "ACTIONS", key: "actions" },
+  { name: "Role", key: "role" },
+  { name: "Status", key: "userStatus" },
+  { name: "Phone Number", key: "phoneNumber" },
+  { name: "Actions", key: "actions" },
 ];
 
 const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
@@ -56,7 +57,13 @@ const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
     switch (columnKey) {
       case "id":
         return (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             {user.id}
           </div>
         );
@@ -64,16 +71,20 @@ const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
       case "name":
         return (
           <div style={{ display: "flex", alignItems: "center" }}>
-            <Avatar src={user.avatar} alt={user.firstName} style={{ marginRight: "10px" }}>
+            <Avatar
+              src={user.avatar}
+              alt={user.firstName}
+              style={{ marginRight: "10px" }}
+            >
               {user.firstName?.charAt(0)?.toUpperCase() || ""}
             </Avatar>
             <div>
               <Typography variant="body1">
                 {user.firstName + " " + user.lastName}
               </Typography>
-              <Typography variant="caption" color="textSecondary">
+              {/* <Typography variant="caption" color="textSecondary">
                 {user.email}
-              </Typography>
+              </Typography> */}
             </div>
           </div>
         );
@@ -81,19 +92,20 @@ const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
         return (
           <div>
             <Typography variant="body1">{cellValue}</Typography>
-            <Typography variant="body2" color="textSecondary">
+            {/* <Typography variant="body2" color="textSecondary">
               {user.team}
-            </Typography>
+            </Typography> */}
           </div>
         );
       case "userStatus":
         return (
-          <Typography
-            variant="body2"
-            color={statusColorMap[user.userStatus] || "textSecondary"} // Dynamically color based on status
-          >
-            {cellValue}
-          </Typography>
+          <Chip >{cellValue}</Chip>
+          // <Typography
+          //   variant="body2"
+          //   color={statusColorMap[user.userStatus] || "textSecondary"} // Dynamically color based on status
+          // >
+          //   {cellValue}
+          // </Typography>
         );
       case "actions":
         return (
@@ -114,9 +126,19 @@ const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
                   }
                 }}
               >
-                {console.log("Action menu "  + user.userStatus)}
-                <DropdownItem key="update" isDisabled={user.userStatus === "Deactive"}>Update Employee</DropdownItem>
-                <DropdownItem key="delete" isDisabled={user.userStatus === "Deactive"}>Delete Employee</DropdownItem>
+                {console.log("Action menu " + user.userStatus)}
+                <DropdownItem
+                  key="update"
+                  isDisabled={user.userStatus === "Deactive"}
+                >
+                  Update Employee
+                </DropdownItem>
+                <DropdownItem
+                  key="delete"
+                  isDisabled={user.userStatus === "Deactive"}
+                >
+                  Delete Employee
+                </DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>
@@ -128,14 +150,19 @@ const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
 
   return (
     <>
-      <TableContainer component={Paper}>
+      <TableContainer>
         <Table sx={{ minWidth: 650 }} aria-label="user table">
           <TableHead>
             <TableRow>
               {columns.map((column) => (
                 <TableCell
                   key={column.key}
-                  style={{ fontWeight: "bold", textTransform: "uppercase" }}
+                  style={{
+                    fontWeight: "300",
+                    // textTransform: "uppercase",
+                    padding: "10px 15px",
+                    color:"#A2A1A8"
+                  }}
                 >
                   {column.name}
                 </TableCell>
@@ -147,7 +174,15 @@ const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
               paginatedData.map((user) => (
                 <TableRow key={user.id} hover>
                   {columns.map((column) => (
-                    <TableCell key={column.key}>
+                    <TableCell
+                      key={column.key}
+                      sx={{
+                        padding: "10px 15px",
+                        height: "44px",
+                        fontSize: "16px",
+                        fontWeight: 300
+                      }}
+                    >
                       {renderCell(user, column.key)}
                     </TableCell>
                   ))}

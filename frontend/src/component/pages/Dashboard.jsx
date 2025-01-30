@@ -306,7 +306,7 @@ const Dashboard = () => {
               variant="outlined"
               startIcon={<IoAddCircleOutline />}
             >
-              Add New Employee
+              Add New Users
             </Button>
           </div>
           <TableComponent

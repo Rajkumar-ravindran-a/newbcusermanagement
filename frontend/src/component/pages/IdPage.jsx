@@ -41,8 +41,8 @@ const brokerValidationSchema = Yup.object().shape({
 const brokerTableTitle = [
   "Id",
   "Broker Name",
-  "Start Date",
-  "Releases Date",
+  // "Start Date",
+  // "Releases Date",
   "Employee",
   "Nism",
   "IdType",
@@ -81,8 +81,8 @@ const AdminSettings = () => {
         const structureData = response.data.data.map((data) => ({
           Id: data.idNumber,
           "Broker Name": data.brokerName,
-          "Start Date": data.startDate,
-          "Releases Date": data.releaseDate || "-",
+          // "Start Date": data.startDate,
+          // "Releases Date": data.releaseDate || "-",
           "Record Id": data.recordId,
           Employee: data?.employeeId || "-",
           Nism: data.nism,
@@ -298,6 +298,7 @@ const AdminSettings = () => {
                     onBlur={handleBlur}
                     error={touched.id && Boolean(errors.id)}
                     helperText={touched.id && errors.id}
+                    inputProps={{ style: { textTransform: "uppercase" } }}
                   />
                   <FormControl
                     fullWidth

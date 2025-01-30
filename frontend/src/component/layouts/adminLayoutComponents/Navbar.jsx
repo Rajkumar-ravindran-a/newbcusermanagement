@@ -46,7 +46,7 @@ const Navbar = ({ role }) => {
               onClick={() => handleNavigation("/dashboard")}
             >
               <FaUsers className="listIcons" />
-              Employees
+              Users
             </li>
             <li
               className={
