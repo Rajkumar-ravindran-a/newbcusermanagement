@@ -14,6 +14,7 @@ import {
 const AdminLayout = ({ children, pageTitle, pageSubtitle }) => {
   const token = localStorage.getItem("token");
   const decoded = jwtDecode(token);
+  console.warn(decoded)
   const handleLogout = async () => {
     localStorage.removeItem("token");
     window.location.href = "/";
@@ -21,7 +22,7 @@ const AdminLayout = ({ children, pageTitle, pageSubtitle }) => {
   return (
     <div className="flex h-full w-full gap-2">
       <div className="adminLayoutNavbar">
-        <Navbar />
+        <Navbar role={decoded.role}/>
       </div>
       <div className="adminLayoutBody">
         <div className="flex justify-between w-full">
@@ -50,7 +51,7 @@ const AdminLayout = ({ children, pageTitle, pageSubtitle }) => {
                   <div className="details-user">
                     <p className="details-user-name">{decoded.fullName}</p>
                     <Typography variant="caption details-user-role">
-                      {decoded.role === 1 ? "Admin" : "Employee"}
+                      {decoded.roleName}
                     </Typography>
                   </div>
                   <div className="mt-2">

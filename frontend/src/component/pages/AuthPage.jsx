@@ -30,12 +30,14 @@ const AuthPage = () => {
         });
         
         if(authData.status===200){
+          
           localStorage.setItem('token', authData.data.access_token)
           const tokenDecode = jwtDecode(authData.data.access_token);
+          console.error(tokenDecode.role)
           if(tokenDecode.role===1){
             navigate("/home")
           }
-          else if(tokenDecode.role===2){
+          else if(tokenDecode.role===2 || tokenDecode.role===3){
             navigate("/datamanagement")
           }
           

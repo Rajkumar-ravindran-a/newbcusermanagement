@@ -11,18 +11,20 @@ import {
   TableCell,
   Pagination,
 } from "@nextui-org/react";
-import { 
-  Typography, 
-  Button, 
-  TextField, 
-  Select, 
-  MenuItem, 
-  FormControl, 
-  InputLabel 
+import {
+  Typography,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import ModelPoper from "../Model";
 import { toast } from "react-toastify";
 import api from "../../config/AxiosCofig.js";
+import AdminLayout from "../layouts/AdminLayout";
+import { IoMdAddCircleOutline } from "react-icons/io";
 
 const dateConversion = (dateString) => {
   const mysqlDatetime = new Date(dateString)
@@ -57,16 +59,26 @@ const DataManagement = () => {
     try {
       const BrokerData = await api.get("/getAllBroker?status=1");
       setBrokerData(BrokerData.data.data);
-      let uniqueArray = BrokerData.data.data
-        .map((item, index, arr) =>
-          arr.findIndex((broker) => broker.brokerName === item.brokerName) === index
-            ? item.brokerName
-            : null
-        )
-        .filter((item) => item !== null);
-      setBrokerList(uniqueArray);
+      // let uniqueArray = BrokerData.data.data
+      //   .map((item, index, arr) =>
+      //     arr.findIndex((broker) => broker.brokerName === item.brokerName) === index
+      //       ? item.brokerName
+      //       : null
+      //   )
+      //   .filter((item) => item !== null);
+      setBrokerList(BrokerData.data.data);
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const fetchBrokerById = async (brokerId) => {
+    const brokerData = await api.get(`/getIdsByBroker/${brokerId}`);
+    if (brokerData.status === 200) {
+      setBrokerId(brokerData.data.data);
+    } else if (brokerData.data.status_code === 404) {
+      toast.error("No id associated for this user.");
+      setBrokerId([]);
     }
   };
 
@@ -98,8 +110,7 @@ const DataManagement = () => {
     buyValue: Yup.number()
       .required("Buy Value is required")
       .positive("Must be positive"),
-    sellValue: Yup.number()
-      .required("Sell Value is required"),
+    sellValue: Yup.number().required("Sell Value is required"),
     dealer: Yup.string().required("Dealer is required"),
     pl: Yup.string().required("P/L is required"),
   });
@@ -107,6 +118,7 @@ const DataManagement = () => {
   const initialValues = {
     Date: new Date(),
     broker: "",
+    brokerId: null,
     tradeId: null,
     strategy: "",
     counter: "",
@@ -121,15 +133,11 @@ const DataManagement = () => {
       ...values,
       Date: values.Date ? dateConversion(values.Date) : null,
     };
-    const SubmitData = await api.post(
-      "/create_trade",
-      submissionData,
-      {
-        headers: {
-          Authorization: `bearer ${token}`,
-        },
-      }
-    );
+    const SubmitData = await api.post("/create_trade", submissionData, {
+      headers: {
+        Authorization: `bearer ${token}`,
+      },
+    });
     if (SubmitData.status === 200) {
       fetchTrade();
       toast.success("Data added successfully");
@@ -138,7 +146,7 @@ const DataManagement = () => {
   };
 
   return (
-    <MainPage>
+    <AdminLayout pageTitle="Data Management" pageSubtitle="Enter trade datas">
       <ModelPoper open={modelPopup} handleClose={handleClose}>
         <Typography variant="h6" className="mb-2">
           Add Data
@@ -155,22 +163,21 @@ const DataManagement = () => {
                   <InputLabel>Broker</InputLabel>
                   <Select
                     name="broker"
-                    value={values.broker}
+                    value={values.brokerId} // Store only brokerId
                     label="Broker"
                     onChange={(e) => {
-                      const onCData = e.target.value;
-                      setFieldValue("broker", onCData);
-                      setBrokerId(
-                        brokerData
-                          .filter((data) => data.brokerName === onCData)
-                          .map((item) => item.brokerId)
+                      const selectedBroker = brokerList.find(
+                        (b) => b.id === e.target.value
                       );
+                      setFieldValue("brokerId", selectedBroker?.id || "");
+                      setFieldValue("broker", selectedBroker?.brokerName || "");
+                      fetchBrokerById(selectedBroker?.id);
                     }}
                     error={touched.broker && Boolean(errors.broker)}
                   >
-                    {brokerList.map((value, index) => (
-                      <MenuItem key={index} value={value}>
-                        {value}
+                    {brokerList.map((value) => (
+                      <MenuItem key={value.id} value={value.id}>
+                        {value.brokerName}
                       </MenuItem>
                     ))}
                   </Select>
@@ -184,9 +191,10 @@ const DataManagement = () => {
                     onChange={(e) => setFieldValue("tradeId", e.target.value)}
                     error={touched.tradeId && Boolean(errors.tradeId)}
                   >
+                    {console.warn(brokerId)}
                     {brokerId.map((value, index) => (
-                      <MenuItem key={index} value={value}>
-                        {value}
+                      <MenuItem key={index} value={value.idNumber}>
+                        {value.idNumber}
                       </MenuItem>
                     ))}
                   </Select>
@@ -217,7 +225,7 @@ const DataManagement = () => {
                 <TextField
                   fullWidth
                   name="counter"
-                  label="Counter"
+                  label="Margin"
                   value={values.counter}
                   onChange={(e) => setFieldValue("counter", e.target.value)}
                   error={touched.counter && Boolean(errors.counter)}
@@ -266,11 +274,8 @@ const DataManagement = () => {
         </Formik>
       </ModelPoper>
       <div className="w-full">
-        <div className="flex justify-between">
-          <Typography variant="h5" className="mb-3">
-            Data Management
-          </Typography>
-          <Button variant="contained mb-3" onClick={() => setModelPopup(true)}>
+        <div className="flex justify-between flex-row-reverse">
+          <Button variant="contained" className="mb-3 mt-3" startIcon={<IoMdAddCircleOutline />} onClick={() => setModelPopup(true)}>
             Submit Data
           </Button>
         </div>
@@ -302,7 +307,7 @@ const DataManagement = () => {
           <TableBody>
             {paginatedData.map((value, index) => (
               <TableRow key={index}>
-                <TableCell>{value.brokerName}</TableCell>
+                <TableCell>{value.broker}</TableCell>
                 <TableCell>{value.tradeId}</TableCell>
                 <TableCell>{value.dealer}</TableCell>
                 <TableCell>{value.buyValue}</TableCell>
@@ -313,7 +318,7 @@ const DataManagement = () => {
           </TableBody>
         </Table>
       </div>
-    </MainPage>
+    </AdminLayout>
   );
 };
 

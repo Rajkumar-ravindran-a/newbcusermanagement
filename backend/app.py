@@ -131,6 +131,7 @@ class CreateIdRequest(BaseModel):
 
 
 class TradeDataRequest(BaseModel):
+    brokerId: int
     broker: str
     Date: str
     tradeId: int
@@ -232,7 +233,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 def update_user(user_id: int, user: UserCreate, db: Session = Depends(get_db)):
     # Check if the user exists by their ID
     existing_user = db.query(Users).filter(Users.id == user_id).first()
-    
+
     if not existing_user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -240,7 +241,7 @@ def update_user(user_id: int, user: UserCreate, db: Session = Depends(get_db)):
     if user.password:
         hashed_password = get_password_hash(user.password)
         existing_user.pwd = hashed_password
-    
+
     # Update other user details
     # existing_user.email = user.email
     existing_user.firstName = user.firstName
@@ -268,12 +269,12 @@ def update_user(user_id: int, user: UserCreate, db: Session = Depends(get_db)):
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     # Check if the user exists by their ID
     existing_user = db.query(Users).filter(Users.id == user_id).first()
-    
+
     if not existing_user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     existing_user.userStatus = 2  # Set user status to Deactive
-    
+
     try:
         db.commit()  # Commit the deletion
         return {"message": "User deleted successfully"}
@@ -290,8 +291,8 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 def login_user(
     db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ):
-    user = db.query(Users).filter(Users.email == form_data.username).first()
-    if user is None or not verify_password(form_data.password, user.pwd):
+    user = db.query(Users, userRole).join(userRole, userRole.id == Users.role).filter(Users.email == form_data.username).first()
+    if user is None or not verify_password(form_data.password, user.Users.pwd):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
@@ -301,10 +302,11 @@ def login_user(
     # Create the JWT token
     access_token = create_access_token(
         data={
-            "email": user.email,
-            "role": user.role,
-            "userId": user.id,
-            "fullName": user.firstName,
+            "email": user.Users.email,
+            "role": user.Users.role,
+            "userId": user.Users.id,
+            "fullName": user.Users.firstName,
+            "roleName": user.userRole.roleName,
         }
     )
     return {"access_token": access_token, "token_type": "bearer"}
@@ -325,6 +327,7 @@ async def create_trade(
 
         # Insert trade data into database
         db_trade = TradeData(
+            brokerId=trade_data.brokerId,
             broker=trade_data.broker,
             Date=trade_data.Date,
             tradeId=trade_data.tradeId,
@@ -425,7 +428,7 @@ async def get_users(
             .filter(Users.id != current_user.id)
             .all()
         )
-        
+
         for userdata, roledata, statusdata in users:
             print(userdata.phonenumber)
             outPut.append(
@@ -568,10 +571,10 @@ async def createId(
         )
         .first()
     )
-    
+
     if existing_id:
         raise HTTPException(status_code=400, detail="ID already exists")
-    
+
     createId = Ids(
         idNumber=response.id,
         brokerId=response.brokerName,
@@ -735,6 +738,7 @@ async def getBroker(
         print("Error in getBroker API:", e)
         raise HTTPException(status_code=500, detail="Internal server error")
 
+
 @app.put("/releaseBroker/{id}/{status}")
 async def relaseBroker(
     id: int,
@@ -747,7 +751,7 @@ async def relaseBroker(
 
         if brokerData is None:
             raise HTTPException(status_code=404, detail="Broker not found")
-        
+
         ids = db.query(Ids).filter(Ids.brokerId == brokerData.id).all()
         if ids:
             for id in ids:
@@ -850,6 +854,27 @@ async def update_broker(
         db.rollback()  # Rollback the transaction if there is a database error
         print("Database Error:", e)
         raise HTTPException(status_code=500, detail="Database error")
+    except Exception as err:
+        print("Error:", err)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/getIdsByBroker/{broker_id}")
+async def getIdsByBroker(
+    broker_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    try:
+        # Fetch IDs with optional filtering
+        results = (
+            db.query(Ids).filter(Ids.brokerId == broker_id, Ids.emloyeeId == current_user.id, Ids.idStatus == 1).all()
+        )
+
+        if not results:
+            return {"status_code": 404, "detail": "No IDs found"}
+
+        return {"data": results}
     except Exception as err:
         print("Error:", err)
         raise HTTPException(status_code=500, detail="Internal server error")
