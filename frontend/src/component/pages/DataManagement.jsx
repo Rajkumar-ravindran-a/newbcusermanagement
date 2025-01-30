@@ -74,10 +74,19 @@ const DataManagement = () => {
 
   const fetchBrokerById = async (brokerId) => {
     const brokerData = await api.get(`/getIdsByBroker/${brokerId}`);
+    console.log(brokerData.data);
     if (brokerData.status === 200) {
-      setBrokerId(brokerData.data.data);
-    } else if (brokerData.data.status_code === 404) {
+      if (brokerData.data.data) {
+        setBrokerId(brokerData.data.data);
+      } else {
+        toast.error("No id associated for this user.");
+        setBrokerId([]);
+      }
+      console.log(brokerData.data, "in 200");
+    } else if (brokerData?.data?.status_code === 404) {
       toast.error("No id associated for this user.");
+      setBrokerId([]);
+    } else {
       setBrokerId([]);
     }
   };
@@ -142,6 +151,7 @@ const DataManagement = () => {
       fetchTrade();
       toast.success("Data added successfully");
       handleClose();
+      setBrokerId([]);
     }
   };
 
@@ -275,7 +285,12 @@ const DataManagement = () => {
       </ModelPoper>
       <div className="w-full">
         <div className="flex justify-between flex-row-reverse">
-          <Button variant="contained" className="mb-3 mt-3" startIcon={<IoMdAddCircleOutline />} onClick={() => setModelPopup(true)}>
+          <Button
+            variant="contained"
+            className="mb-3 mt-3"
+            startIcon={<IoMdAddCircleOutline />}
+            onClick={() => setModelPopup(true)}
+          >
             Submit Data
           </Button>
         </div>
