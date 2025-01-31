@@ -33,7 +33,7 @@ const brokerValidationSchema = Yup.object().shape({
   brokerName: Yup.string().required("Broker Name is required"),
   id: Yup.string().required("ID is required"),
   startDate: Yup.date().required("Start Date is required"),
-  employee: Yup.string().required("Employee is required"),
+  employee: Yup.string().required("Dealer is required"),
   nism: Yup.string().required("NISM is required"),
   idType: Yup.string().required("ID Type is required"),
 });
@@ -278,7 +278,7 @@ const AdminSettings = () => {
           }}
         >
           <Typography variant="h6">
-            {editMode ? "Edit ID" : "Add New ID"}
+            {editMode ? "Edit ID" : "Add New ID"} 
           </Typography>
           <Formik
             initialValues={initialValues}
@@ -345,12 +345,12 @@ const AdminSettings = () => {
                     margin="normal"
                     error={touched.employee && Boolean(errors.employee)}
                   >
-                    <InputLabel id="employee-label">Employee</InputLabel>
+                    <InputLabel id="employee-label">Dealer</InputLabel>
                     <Select
                       labelId="employee-label"
                       id="employee"
                       name="employee"
-                      label="Employee"
+                      label="Dealer"
                       value={values.employee || ""}
                       onChange={handleChange}
                       onBlur={handleBlur}
