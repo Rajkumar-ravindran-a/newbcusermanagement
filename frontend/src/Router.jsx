@@ -12,32 +12,13 @@ const HomePage = lazy(() => import("./component/pages/HomePage.jsx"));
 const BrokerPage = lazy(() => import("./component/pages/SettingsPage.jsx"));
 const IdPage = lazy(() => import("./component/pages/IdPage.jsx"));
 
-const getTokenData = () => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-
-    const decodedToken = jwtDecode(token);
-
-    // Check if token is expired
-    if (decodedToken.exp * 1000 < Date.now()) {
-      localStorage.removeItem("token");
-      return null;
-    }
-
-    return decodedToken;
-  } catch (error) {
-    localStorage.removeItem("token");
-    return null;
-  }
-};
-
 const AppRoutes = () => {
-  const tokenData = getTokenData();
-  const isAuthenticated = !!tokenData;
-  const userRole = tokenData?.role || null;
+  const token = localStorage.getItem("token");
+  const isAuthenticated = !!token;
 
   const PublicRoute = ({ element, restricted }) => {
+    const token = localStorage.getItem("token");
+    const isAuthenticated = !!token;
     return restricted && isAuthenticated ? (
       <Navigate to="/dashboard" replace />
     ) : (
@@ -45,15 +26,16 @@ const AppRoutes = () => {
     );
   };
 
-  function PrivateRoute({ element, requiredRole }) {
+  function PrivateRoute({ element, userRole, requiredRole }) {
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token);
+    const isAuthenticated = !!token;
     if (!isAuthenticated) {
       return <Navigate to="/" replace />;
     }
-
     if (requiredRole && userRole !== requiredRole) {
       return <Navigate to="/" replace />;
     }
-
     return element;
   }
 
@@ -71,6 +53,8 @@ const AppRoutes = () => {
         path="/dashboard"
         element={
           <PrivateRoute
+            isAuthenticated={isAuthenticated}
+            userRole={null}
             requiredRole={null}
             element={
               <Suspense fallback={<div>Loading.....</div>}>
@@ -84,6 +68,8 @@ const AppRoutes = () => {
         path="/home"
         element={
           <PrivateRoute
+            isAuthenticated={isAuthenticated}
+            userRole={null}
             requiredRole={null}
             element={
               <Suspense fallback={<div>Loading.....</div>}>
@@ -97,6 +83,8 @@ const AppRoutes = () => {
         path="/datamanagement"
         element={
           <PrivateRoute
+            isAuthenticated={isAuthenticated}
+            userRole={null}
             requiredRole={null}
             element={
               <Suspense fallback={<div>Loading.....</div>}>
@@ -114,7 +102,7 @@ const AppRoutes = () => {
           </Suspense>
         }
       />
-      <Route
+       <Route
         path="/ids"
         element={
           <Suspense fallback={<div>Loading.....</div>}>
