@@ -11,7 +11,6 @@ import {
   FormControl,
   InputAdornment,
   IconButton,
-  Card,
 } from "@mui/material";
 import ModelPoper from "../Model";
 import { Formik, Field, Form } from "formik";
@@ -19,6 +18,7 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import api from "../../config/AxiosCofig";
 import { IoAddCircleOutline, IoSearch } from "react-icons/io5";
+import { Card } from "@nextui-org/react";
 
 const Dashboard = () => {
   const token = localStorage.getItem("token");

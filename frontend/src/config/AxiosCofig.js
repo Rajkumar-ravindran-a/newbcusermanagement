@@ -26,6 +26,7 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
+      window.location.href = "/";  
       console.error("Response Interceptor: Unauthorized access - Redirecting to login");
     } else {
       console.error("Response Interceptor Error:", error.message);

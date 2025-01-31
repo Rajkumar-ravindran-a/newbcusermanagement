@@ -59,7 +59,13 @@ const AdminSettings = () => {
   const [getUserList, setGetUserList] = useState([]);
   const [selectedBroker, setSelectedBroker] = useState(null);
   const [loader, setLoader] = useState(false);
-  const [idType] = useState(["Manual-ODIN", "Manual-GREEK", "Manual-XTS", "Convex", "XTS-API"]);
+  const [idType] = useState([
+    "Manual-ODIN",
+    "Manual-GREEK",
+    "Manual-XTS",
+    "Convex",
+    "XTS-API",
+  ]);
 
   const getBrokerData = async () => {
     try {
@@ -278,7 +284,7 @@ const AdminSettings = () => {
           }}
         >
           <Typography variant="h6">
-            {editMode ? "Edit ID" : "Add New ID"} 
+            {editMode ? "Edit ID" : "Add New ID"}
           </Typography>
           <Formik
             initialValues={initialValues}
@@ -377,8 +383,9 @@ const AdminSettings = () => {
                     onBlur={handleBlur}
                     error={touched.nism && Boolean(errors.nism)}
                     helperText={touched.nism && errors.nism}
+                    inputProps={{ style: { textTransform: "uppercase" } }}
                   />
-                   <FormControl
+                  <FormControl
                     fullWidth
                     margin="normal"
                     error={touched.idType && Boolean(errors.idType)}
@@ -393,11 +400,12 @@ const AdminSettings = () => {
                       onChange={handleChange}
                       onBlur={handleBlur}
                     >
-                      {idType !== undefined && idType?.map((data, index) => (
-                        <MenuItem key={index} value={data}>
-                          {data}
-                        </MenuItem>
-                      ))}
+                      {idType !== undefined &&
+                        idType?.map((data, index) => (
+                          <MenuItem key={index} value={data}>
+                            {data}
+                          </MenuItem>
+                        ))}
                     </Select>
                     {touched.idType && Boolean(errors.idType) && (
                       <FormHelperText>{errors.idType}</FormHelperText>
