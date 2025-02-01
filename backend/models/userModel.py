@@ -75,7 +75,7 @@ class Users(base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     firstName = Column(String(100), index=True, nullable=False)
     lastName = Column(String(100), index=True, nullable=True)
-    email = Column(String(200), unique=True, index=True, nullable=False)
+    email = Column(String(200), unique=False, index=True, nullable=False)
     phonenumber = Column(String(50), index=True, nullable=True)
     role = Column(
         Integer,
@@ -103,6 +103,10 @@ class TradeData(base):
     sellValue = Column(Integer, nullable=False)
     userId = Column(Integer, ForeignKey("users.id"), nullable=False)
 
+class Strategy(base):
+    __tablename__ = "strategy"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    StrategyName = Column(String, nullable=False)
 
 class RegisterUser(BaseModel):
     firstName: str
@@ -110,6 +114,7 @@ class RegisterUser(BaseModel):
     email: str
     role: str
     pwd: str
+
 
 
 class Token(BaseModel):

@@ -42,6 +42,7 @@ const DataManagement = () => {
   const [brokerList, setBrokerList] = useState([]);
   const [page, setPage] = useState(1);
   const [modelPopup, setModelPopup] = useState(false);
+  const [strategyData, setStrategyData] = useState([])
 
   const token = localStorage.getItem("token");
 
@@ -99,6 +100,7 @@ const DataManagement = () => {
   useEffect(() => {
     fetchTrade();
     fetchAllBrokers();
+    getStrategyData();
   }, [token]);
 
   const rowsPerPage = 4; // Number of rows per page
@@ -140,6 +142,22 @@ const DataManagement = () => {
     sellValue: "",
     dealer: decode.fullName,
     pl: 0,
+  };
+
+  const getStrategyData = async () => {
+    try {
+      const response = await api.get("/getStrategies");
+      console.log(response);
+      if (response.status === 200) {
+        const formattedData = response.data.map((data) => ({
+          "Strategy Id": data.id,
+          "Strategy Name": data.StrategyName
+        }));
+        setStrategyData(formattedData);
+      }
+    } catch (error) {
+      console.error("Error fetching strategies:", error);
+    }
   };
 
   const handleSubmit = async (values) => {
@@ -244,7 +262,12 @@ const DataManagement = () => {
 
                       error={touched.strategy && Boolean(errors.strategy)}
                     >
-                      <MenuItem value="Strategy 1">Strategy 1</MenuItem>
+                      {strategyData.map((value) => (
+                        <MenuItem key={value["Strategy Name"]} value={value["Strategy Name"]}>
+                          {value["Strategy Name"]}
+                        </MenuItem>
+                      ))}
+                      
                     </Select>
                   </FormControl>
                   <TextField

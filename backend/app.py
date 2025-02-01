@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, date
 from typing import Optional, List, Dict
-from models.userModel import TradeData, Users, userRole, Status, Brokers, Ids
+from models.userModel import TradeData, Users, userRole, Status, Brokers, Ids, Strategy
 from config.dbconnection import sessionLocal
 from sqlalchemy.orm import Session
 from sqlalchemy import exc, desc
@@ -120,6 +120,17 @@ class UserCreate(BaseModel):
         orm_mode = True
 
 
+class StrategyCreate(BaseModel):
+    strategyName: str
+
+
+class StrategyOut(BaseModel):
+    StrategyName: str
+
+    class Config:
+        orm_mode = True
+
+
 class CreateIdRequest(BaseModel):
     id: str
     brokerName: int
@@ -128,6 +139,10 @@ class CreateIdRequest(BaseModel):
     nism: str | None = None
     startDate: date
     releaseDate: date | None = None
+
+
+class StrategyUpdate(BaseModel):
+    StrategyName: str
 
 
 class TradeDataRequest(BaseModel):
@@ -163,8 +178,9 @@ class UserResponse(BaseModel):
     class Config:
         orm_mode = True
 
+
 class fetchUserData(BaseModel):
-    status : Optional[int] = None
+    status: Optional[int] = None
 
 
 # Helper functions
@@ -197,7 +213,9 @@ def root():
 
 @app.post("/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    existing_user = db.query(Users).filter(Users.email == user.email).first()
+    existing_user = (
+        db.query(Users).filter(Users.email == user.email, Users.userStatus == 1).first()
+    )
     if existing_user:
         raise HTTPException(status_code=400, detail="Email is already registered")
 
@@ -294,7 +312,12 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 def login_user(
     db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ):
-    user = db.query(Users, userRole).join(userRole, userRole.id == Users.role).filter(Users.email == form_data.username).first()
+    user = (
+        db.query(Users, userRole)
+        .join(userRole, userRole.id == Users.role)
+        .filter(Users.email == form_data.username, Users.userStatus == 1)
+        .first()
+    )
     if user is None or not verify_password(form_data.password, user.Users.pwd):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -309,7 +332,7 @@ def login_user(
             detail="User is not active",
             headers={"WWW-Authenticate": "Bearer"},
         )
-        
+
     access_token = create_access_token(
         data={
             "email": user.Users.email,
@@ -880,7 +903,13 @@ async def getIdsByBroker(
     try:
         # Fetch IDs with optional filtering
         results = (
-            db.query(Ids).filter(Ids.brokerId == broker_id, Ids.emloyeeId == current_user.id, Ids.idStatus == 1).all()
+            db.query(Ids)
+            .filter(
+                Ids.brokerId == broker_id,
+                Ids.emloyeeId == current_user.id,
+                Ids.idStatus == 1,
+            )
+            .all()
         )
 
         if not results:
@@ -891,6 +920,54 @@ async def getIdsByBroker(
         print("Error:", err)
         raise HTTPException(status_code=500, detail="Internal server error")
 
+
+@app.post(
+    "/strategies",  status_code=status.HTTP_201_CREATED
+)
+def create_strategy(strategy: StrategyCreate, db: Session = Depends(get_db)):
+    try:
+        db_strategy = Strategy(StrategyName=strategy.strategyName)
+        db.add(db_strategy)
+        db.commit()
+        db.refresh(db_strategy)
+        return {"status_code": 201, "details": "Strategy Created successfully"}
+    except Exception as e:
+        db.rollback()
+        print("error",e)
+        raise HTTPException(status_code=500, detail="internal server error")
+
+
+@app.put("/strategies/{strategy_id}", response_model=StrategyOut)
+def update_strategy(
+    strategy_id: int, strategy_update: StrategyUpdate, db: Session = Depends(get_db)
+):
+    strategy = db.query(Strategy).filter(Strategy.id == strategy_id).first()
+    if strategy is None:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+    strategy.StrategyName = strategy_update.StrategyName
+    db.commit()
+    db.refresh(strategy)
+    return strategy
+
+
+@app.delete("/strategies/{strategy_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_strategy(strategy_id: int, db: Session = Depends(get_db)):
+    strategy = db.query(Strategy).filter(Strategy.id == strategy_id).first()
+    if strategy is None:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+    db.delete(strategy)
+    db.commit()
+    return None
+
+
+@app.get("/getStrategies")
+def read_strategies(db: Session = Depends(get_db)):
+    try:
+        strategies = db.query(Strategy).all()
+        return strategies
+    except Exception as e:
+        print("error", e)
+        raise HTTPException(status_code=500, detail="internal server error")
 
 class StrategyDataIn(BaseModel):
     stratagyData: dict

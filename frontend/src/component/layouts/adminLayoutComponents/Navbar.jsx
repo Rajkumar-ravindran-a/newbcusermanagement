@@ -7,6 +7,7 @@ import { useLocation } from "react-router-dom";
 import { RiStockFill } from "react-icons/ri";
 import { TiDocumentText } from "react-icons/ti";
 import { MdDataSaverOn } from "react-icons/md";
+import { PiStrategyBold } from "react-icons/pi";
 
 const Navbar = ({ role }) => {
   const location = useLocation();
@@ -65,6 +66,15 @@ const Navbar = ({ role }) => {
             >
               <TiDocumentText className="listIcons" />
               Id
+            </li>
+            <li
+              className={
+                activePage === "/stratagy" ? "active navmenuitem" : "navmenuitem"
+              }
+              onClick={() => handleNavigation("/stratagy")}
+            >
+              <PiStrategyBold className="listIcons" />
+              Strategy
             </li>
           </ul>
         )}

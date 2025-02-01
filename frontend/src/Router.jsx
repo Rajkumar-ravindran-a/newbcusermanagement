@@ -11,6 +11,7 @@ const DataManagementPage = lazy(() =>
 const HomePage = lazy(() => import("./component/pages/HomePage.jsx"));
 const BrokerPage = lazy(() => import("./component/pages/SettingsPage.jsx"));
 const IdPage = lazy(() => import("./component/pages/IdPage.jsx"));
+const StratagyPage = lazy(() => import("./component/pages/StratagyPage.jsx"));
 
 const AppRoutes = () => {
   const token = localStorage.getItem("token");
@@ -110,6 +111,11 @@ const AppRoutes = () => {
           </Suspense>
         }
       />
+      <Route path="/stratagy" element={
+        <Suspense fallback={<div>Loading.....</div>}>
+          <StratagyPage />
+        </Suspense>
+      }/>
       <Route path="/test" element={<AdminLayout />} />
     </Routes>
   );
