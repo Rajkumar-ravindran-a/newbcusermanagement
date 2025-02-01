@@ -163,6 +163,9 @@ class UserResponse(BaseModel):
     class Config:
         orm_mode = True
 
+class fetchUserData(BaseModel):
+    status : Optional[int] = None
+
 
 # Helper functions
 def verify_password(plain_password, hashed_password):
@@ -300,6 +303,13 @@ def login_user(
         )
 
     # Create the JWT token
+    if user.Users.userStatus != 1:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User is not active",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
     access_token = create_access_token(
         data={
             "email": user.Users.email,
@@ -410,6 +420,7 @@ def getTradeById(
 
 @app.get("/users", response_model=List[UserResponse])
 async def get_users(
+    user_data: fetchUserData = None,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
@@ -445,6 +456,7 @@ async def get_users(
             )
         return outPut
     except exc.SQLAlchemyError as e:
+        print("Error", e)
         raise HTTPException(status_code=500, detail="Database error occurred")
 
 

@@ -2,6 +2,16 @@
 
 .custom{
   padding: 1.3rem;
+  .tble-custom{
+    position: relative;
+    // .tble-head{
+    //   position: sticky;
+      
+    // }
+  }
+  .tble-container{
+    max-height: 56.3vh;
+  }
   .table-row{
     font-weight: 300 !important;
     color: color_variables.$text-secondary;

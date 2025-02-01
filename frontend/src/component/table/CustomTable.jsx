@@ -7,7 +7,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TablePagination,
   TableSortLabel,
   CircularProgress,
 } from "@mui/material";
@@ -23,12 +22,6 @@ const CustomTable = ({
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
-
-  const handleChangePage = (event, newPage) => setPage(newPage);
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
 
   const handleSort = (columnKey) => {
     setSortConfig((prevConfig) => {
@@ -54,11 +47,6 @@ const CustomTable = ({
     });
   }, [tableData, sortConfig]);
 
-  const paginatedData = sortedData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
-
   const handleButtonClick = (status, id) => {
     if (status === 1) {
       renderAction(id);
@@ -69,18 +57,25 @@ const CustomTable = ({
 
   return (
     <Paper className="custom">
-      <TableContainer>
-        <Table className="tble-custom">
+      <TableContainer className="tble-container">
+        <Table className="tble-custom" stickyHeader>
           <TableHead>
-            <TableRow>
+            <TableRow className="tble-head">
               {title.map((header, index) => {
-                // Merge "Gross Fund" if it exists
                 if (header === "Gross Fund") {
                   return (
                     <TableCell
                       key="grossFund"
                       align="center"
-                      sx={{ fontWeight: "bold", minWidth: 200, maxWidth: 300 }}
+                      sx={{
+                        // fontWeight: "bold",
+                        // minWidth: 200,
+                        // maxWidth: 300,
+                        position: "sticky",
+                        top: 0,
+                        backgroundColor: "white",
+                        zIndex: 1,
+                      }}
                     >
                       <TableSortLabel
                         active={sortConfig.key === "grossFund"}
@@ -105,6 +100,10 @@ const CustomTable = ({
                       width: columnWidths[index] || "auto",
                       minWidth: columnWidths[index] || 150,
                       maxWidth: columnWidths[index] || 300,
+                      position: "sticky",
+                      top: 0,
+                      backgroundColor: "white",
+                      zIndex: 2,
                     }}
                   >
                     <TableSortLabel
@@ -124,7 +123,7 @@ const CustomTable = ({
             </TableRow>
           </TableHead>
 
-          <TableBody>
+          <TableBody className="tble-body">
             {loading && (
               <TableRow>
                 <TableCell colSpan={title.length} className="middle-noData">
@@ -132,7 +131,7 @@ const CustomTable = ({
                 </TableCell>
               </TableRow>
             )}
-            {paginatedData.map((rowData, rowIndex) => (
+            {sortedData.map((rowData, rowIndex) => (
               <TableRow key={rowIndex}>
                 {Object.keys(rowData).map((key, colIndex) => {
                   if (
@@ -146,7 +145,6 @@ const CustomTable = ({
                   )
                     return null;
 
-                  // Merge "Gross Fund" columns dynamically
                   if (key === "grossFund") {
                     return (
                       <TableCell
@@ -176,6 +174,7 @@ const CustomTable = ({
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                        // backgroundColor: "white"
                       }}
                     >
                       {key === "action" && renderAction ? (
@@ -195,7 +194,7 @@ const CustomTable = ({
                 })}
               </TableRow>
             ))}
-            {!loading && paginatedData.length === 0 && (
+            {!loading && sortedData.length === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={title.length}
@@ -209,16 +208,6 @@ const CustomTable = ({
           </TableBody>
         </Table>
       </TableContainer>
-
-      <TablePagination
-        component="div"
-        count={tableData.length}
-        page={page}
-        onPageChange={handleChangePage}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={[5, 10, 15]}
-      />
     </Paper>
   );
 };

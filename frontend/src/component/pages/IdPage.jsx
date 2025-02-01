@@ -258,7 +258,7 @@ const AdminSettings = () => {
           </Button>
         </div>
 
-        <Box mt={4}>
+        <Box mt={3}>
           <CustomTable
             title={brokerTableTitle}
             tableData={filteredIdData}
