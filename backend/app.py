@@ -93,7 +93,9 @@ def get_current_user(
         email: str = payload.get("email")
         if email is None:
             raise HTTPException(status_code=401, detail="Invalid token")
-        user = db.query(Users).filter(Users.email == email).first()
+        user = (
+            db.query(Users).filter(Users.email == email, Users.userStatus == 1).first()
+        )
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
         return user
@@ -149,7 +151,7 @@ class TradeDataRequest(BaseModel):
     brokerId: int
     broker: str
     Date: str
-    tradeId: int
+    tradeId: str
     strategy: str
     counter: Optional[int] = None
     buyValue: int
@@ -422,13 +424,15 @@ def getTradeById(
     try:
         outPut = []
         # Query trade data for the specific user
+        print(current_user.id)
         trades = db.query(TradeData).filter(TradeData.userId == current_user.id).all()
         for trade in trades:
+            print(trade)
             outPut.append(
                 {
                     "id": trade.id,
                     "broker": trade.broker,
-                    "Date": trade.Date.strftime("%Y-%m-%d"),
+                    "Date": trade.Date.strftime("%Y-%m-%d %H:%M:%S"),
                     "tradeId": trade.tradeId,
                     "strategy": trade.strategy,
                     "counter": trade.counter,
@@ -921,9 +925,7 @@ async def getIdsByBroker(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@app.post(
-    "/strategies",  status_code=status.HTTP_201_CREATED
-)
+@app.post("/strategies", status_code=status.HTTP_201_CREATED)
 def create_strategy(strategy: StrategyCreate, db: Session = Depends(get_db)):
     try:
         db_strategy = Strategy(StrategyName=strategy.strategyName)
@@ -933,7 +935,7 @@ def create_strategy(strategy: StrategyCreate, db: Session = Depends(get_db)):
         return {"status_code": 201, "details": "Strategy Created successfully"}
     except Exception as e:
         db.rollback()
-        print("error",e)
+        print("error", e)
         raise HTTPException(status_code=500, detail="internal server error")
 
 
@@ -968,6 +970,7 @@ def read_strategies(db: Session = Depends(get_db)):
     except Exception as e:
         print("error", e)
         raise HTTPException(status_code=500, detail="internal server error")
+
 
 class StrategyDataIn(BaseModel):
     stratagyData: dict

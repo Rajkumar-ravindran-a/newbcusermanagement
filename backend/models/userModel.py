@@ -96,7 +96,7 @@ class TradeData(base):
     brokerId = Column(Integer, ForeignKey("brokers.id"), nullable=False)
     broker = Column(String(200), nullable=False, index=True)
     Date = Column(DateTime, nullable=False, index=True)
-    tradeId = Column(Integer, nullable=False, index=True)
+    tradeId = Column(String(200), nullable=False, index=True)
     strategy = Column(String(200), index=True, nullable=False)
     counter = Column(Integer)
     buyValue = Column(Integer, nullable=False)

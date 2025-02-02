@@ -264,7 +264,7 @@ const DataManagement = () => {
                     >
                       {strategyData.map((value) => (
                         <MenuItem key={value["Strategy Name"]} value={value["Strategy Name"]}>
-                          {value["Strategy Name"]}
+                          {value["Strategy Name"]?.toUpperCase()}
                         </MenuItem>
                       ))}
                       
@@ -371,16 +371,20 @@ const DataManagement = () => {
             <TableColumn>Buy Value</TableColumn>
             <TableColumn>Sell Value</TableColumn>
             <TableColumn>Strategy</TableColumn>
+            <TableColumn>P/L</TableColumn>
+            <TableColumn>Date</TableColumn>
           </TableHeader>
           <TableBody>
             {paginatedData.map((value, index) => (
               <TableRow key={index}>
-                <TableCell>{value.broker}</TableCell>
-                <TableCell>{value.tradeId}</TableCell>
-                <TableCell>{value.dealer}</TableCell>
+                <TableCell>{value.broker?.toUpperCase()}</TableCell>
+                <TableCell>{value.tradeId?.toUpperCase()}</TableCell>
+                <TableCell>{value.dealer?.toUpperCase()}</TableCell>
                 <TableCell>{value.buyValue}</TableCell>
                 <TableCell>{value.sellValue}</TableCell>
-                <TableCell>{value.strategy}</TableCell>
+                <TableCell>{value.strategy?.toUpperCase()}</TableCell>
+                <TableCell>{value.sellValue - value.buyValue}</TableCell>
+                <TableCell>{value.Date?.toUpperCase()}</TableCell>
               </TableRow>
             ))}
           </TableBody>
