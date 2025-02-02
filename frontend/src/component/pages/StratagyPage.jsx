@@ -61,7 +61,7 @@ const StratagyPage = () => {
       if (response.status === 200) {
         const formattedData = response.data.map((data) => ({
           "Strategy Id": data.id,
-          "Strategy Name": data.StrategyName,
+          "Strategy Name": data.StrategyName?.toUpperCase(),
           Action: (
             <Dropdown>
               <DropdownTrigger>
@@ -165,7 +165,7 @@ const StratagyPage = () => {
             initialValues={{
               strategyName:
                 editMode && selectedStrategy
-                  ? selectedStrategy["StrategyName"]
+                  ? selectedStrategy["strategyName"]
                   : "",
             }}
             enableReinitialize
@@ -177,7 +177,7 @@ const StratagyPage = () => {
                   // Update API call for editing
                   const response = await api.put(
                     `/strategies/${selectedStrategy["id"]}`,
-                    { StrategyName: values.strategyName }
+                    { strategyName: values.strategyName }
                   );
                   if (response.status === 200) {
                     toast.success("Strategy updated successfully");
@@ -186,7 +186,7 @@ const StratagyPage = () => {
                 } else {
                   // Create API call for new strategy
                   const response = await api.post("/strategies", {
-                    StrategyName: values.strategyName,
+                    strategyName: values.strategyName,
                   });
                   if (response.status === 201) {
                     toast.success("Strategy created successfully")

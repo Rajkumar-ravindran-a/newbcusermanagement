@@ -180,6 +180,7 @@ const Dashboard = () => {
                     label="First Name"
                     placeholder="Enter First Name"
                     fullWidth
+                    inputProps={{ style: { textTransform: "uppercase" } }}
                   />
                   {touched.firstName && errors.firstName && (
                     <div className="text-red-500 text-sm">
@@ -194,6 +195,7 @@ const Dashboard = () => {
                     label="Last Name"
                     placeholder="Enter Last Name"
                     fullWidth
+                    inputProps={{ style: { textTransform: "uppercase" } }}
                   />
                   {touched.lastName && errors.lastName && (
                     <div className="text-red-500 text-sm">
@@ -223,6 +225,7 @@ const Dashboard = () => {
                   label="Phone Number"
                   placeholder="Enter Phone Number"
                   fullWidth
+                  inputProps={{ style: { textTransform: "uppercase" } }}
                 />
                 {touched.phonenumber && errors.phonenumber && (
                   <div className="text-red-500 text-sm">
@@ -239,8 +242,8 @@ const Dashboard = () => {
                     label="Role"
                     onChange={(event) => setFieldValue("role", event.target.value)} // Correctly handle role update
                   >
-                    <MenuItem value="2">Dealer</MenuItem>
-                    <MenuItem value="3">Trader</MenuItem>
+                    <MenuItem value="2">DEALER</MenuItem>
+                    <MenuItem value="3">TRADER</MenuItem>
                     {/* Add more roles if needed */}
                   </Field>
                 </FormControl>

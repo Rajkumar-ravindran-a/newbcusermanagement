@@ -115,7 +115,7 @@ const CustomTable = ({
                       }
                       onClick={() => handleSort(header.toLowerCase())}
                     >
-                      {header}
+                      {header?.toUpperCase()}
                     </TableSortLabel>
                   </TableCell>
                 );
@@ -158,7 +158,7 @@ const CustomTable = ({
                           textOverflow: "ellipsis",
                         }}
                       >
-                        {`${rowData["grossFund"]} | ${rowData["grossFundInterest"]} | ${rowData["grossFundSharing"]}`}
+                        {`${rowData["grossFund"].toUpperCase()} | ${rowData["grossFundInterest"].toUpperCase()} | ${rowData["grossFundSharing"].toUpperCase()}`}
                       </TableCell>
                     );
                   }

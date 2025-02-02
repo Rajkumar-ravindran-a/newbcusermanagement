@@ -85,14 +85,14 @@ const AdminSettings = () => {
       const response = await api.get("/getIds");
       if (response.status === 200) {
         const structureData = response.data.data.map((data) => ({
-          Id: data.idNumber,
-          "Broker Name": data.brokerName,
+          Id: data.idNumber?.toUpperCase(),
+          "Broker Name": data.brokerName.toUpperCase(),
           // "Start Date": data.startDate,
           // "Releases Date": data.releaseDate || "-",
           "Record Id": data.recordId,
-          Employee: data?.employeeId || "-",
-          Nism: data.nism,
-          IdType: data.idType,
+          Employee: data?.employeeId?.toUpperCase() || "-",
+          Nism: data.nism?.toUpperCase(),
+          IdType: data.idType?.toUpperCase(),
           Action: (
             <Dropdown>
               <DropdownTrigger>
@@ -320,6 +320,7 @@ const AdminSettings = () => {
                       value={values.brokerName || ""}
                       onChange={handleChange}
                       onBlur={handleBlur}
+                      inputProps={{ style: { textTransform: "uppercase" } }}
                     >
                       {brokerData.map((data, index) => (
                         <MenuItem key={index} value={data.id}>

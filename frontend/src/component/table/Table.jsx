@@ -80,7 +80,7 @@ const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
             </Avatar>
             <div>
               <Typography variant="body1">
-                {user.firstName + " " + user.lastName}
+                {user.firstName?.toUpperCase() + " " + user.lastName?.toUpperCase()}
               </Typography>
               {/* <Typography variant="caption" color="textSecondary">
                 {user.email}
@@ -91,7 +91,7 @@ const TableComponent = ({ Userdata, onUpdateClick, onDeleteClick }) => {
       case "role":
         return (
           <div>
-            <Typography variant="body1">{cellValue}</Typography>
+            <Typography variant="body1">{cellValue?.toUpperCase()}</Typography>
             {/* <Typography variant="body2" color="textSecondary">
               {user.team}
             </Typography> */}
