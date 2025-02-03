@@ -381,6 +381,68 @@ async def create_trade(
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
+@app.put("/update_trade/{trade_id}")
+async def update_trade(
+    trade_id: int,
+    trade_data: TradeDataRequest,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    try:
+        # Validate the token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("email")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        # Retrieve trade data
+        db_trade = db.query(TradeData).filter(TradeData.id == trade_id).first()
+        if db_trade is None:
+            raise HTTPException(status_code=404, detail="Trade not found")
+
+        # Update trade data
+        db_trade.brokerId = trade_data.brokerId
+        db_trade.broker = trade_data.broker
+        db_trade.Date = trade_data.Date
+        db_trade.tradeId = trade_data.tradeId
+        db_trade.strategy = trade_data.strategy
+        db_trade.counter = trade_data.counter
+        db_trade.buyValue = trade_data.buyValue
+        db_trade.sellValue = trade_data.sellValue
+
+        db.commit()
+        db.refresh(db_trade)
+
+        return {"message": "Trade data updated successfully", "trade_id": db_trade.id}
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+@app.delete("/delete_trade/{trade_id}")
+async def delete_trade(
+    trade_id: int,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+):
+    try:
+        # Validate the token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("email")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        # Retrieve and delete trade data
+        db_trade = db.query(TradeData).filter(TradeData.id == trade_id).first()
+        if db_trade is None:
+            raise HTTPException(status_code=404, detail="Trade not found")
+
+        db.delete(db_trade)
+        db.commit()
+
+        return {"message": "Trade data deleted successfully", "trade_id": trade_id}
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
 @app.get("/getAllTrade")
 def getAllTrade(
     db: Session = Depends(get_db),
@@ -438,6 +500,8 @@ def getTradeById(
                     "counter": trade.counter,
                     "buyValue": trade.buyValue,
                     "sellValue": trade.sellValue,
+                    "brokerId": trade.brokerId,
+                    "pl": trade.sellValue - trade.buyValue
                 }
             )
         return outPut
@@ -463,7 +527,7 @@ async def get_users(
             db.query(Users, userRole, Status)
             .join(userRole, Users.role == userRole.id)
             .join(Status, Users.userStatus == Status.id)
-            .filter(Users.id != current_user.id)
+            .filter(Users.id != current_user.id, Users.userStatus == 1)
             .all()
         )
 

@@ -94,7 +94,7 @@ const AdminSettings = () => {
           Nism: data.nism?.toUpperCase(),
           IdType: data.idType?.toUpperCase(),
           Action: (
-            <Dropdown>
+            <Dropdown style={{zIndex:-2}}>
               <DropdownTrigger>
                 <IconButton>
                   <CiMenuKebab />

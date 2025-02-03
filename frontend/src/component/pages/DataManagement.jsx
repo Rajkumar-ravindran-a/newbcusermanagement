@@ -19,6 +19,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  IconButton,
 } from "@mui/material";
 import ModelPoper from "../Model";
 import { toast } from "react-toastify";
@@ -26,6 +27,13 @@ import api from "../../config/AxiosCofig.js";
 import AdminLayout from "../layouts/AdminLayout";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import { jwtDecode } from "jwt-decode";
+import { CiMenuKebab } from "react-icons/ci";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
 
 const dateConversion = (dateString) => {
   const mysqlDatetime = new Date(dateString)
@@ -42,13 +50,13 @@ const DataManagement = () => {
   const [brokerList, setBrokerList] = useState([]);
   const [page, setPage] = useState(1);
   const [modelPopup, setModelPopup] = useState(false);
-  const [strategyData, setStrategyData] = useState([])
+  const [strategyData, setStrategyData] = useState([]);
+  const [edit, setEdit] = useState(false);
+  const [editData, setEditData] = useState(null);
 
   const token = localStorage.getItem("token");
 
-  const decode = jwtDecode(token)
-
-  console.log(decode)
+  const decode = jwtDecode(token);
 
   const fetchTrade = async () => {
     const tradeData = await api.get("/getTrade", {
@@ -101,7 +109,7 @@ const DataManagement = () => {
     fetchTrade();
     fetchAllBrokers();
     getStrategyData();
-  }, [token]);
+  }, []);
 
   const rowsPerPage = 4; // Number of rows per page
   const pages = Math.ceil(tradeData.length / rowsPerPage);
@@ -114,7 +122,12 @@ const DataManagement = () => {
 
   const handleClose = () => {
     setModelPopup(false);
+    setEdit(false);
   };
+
+  useEffect(() => {
+    console.log(editData);
+  }, [editData]);
 
   const validationSchema = Yup.object().shape({
     broker: Yup.string().required("Broker is required"),
@@ -131,18 +144,50 @@ const DataManagement = () => {
     pl: Yup.number().required("P/L is required"),
   });
 
-  const initialValues = {
-    Date: new Date(),
-    broker: "",
-    brokerId: null,
-    tradeId: null,
-    strategy: "",
-    counter: "",
-    buyValue: "",
-    sellValue: "",
-    dealer: decode.fullName,
-    pl: 0,
+  let initialValues = edit
+    ? {
+        id: editData.id,
+        Date: new Date(editData.Date),
+        broker: editData.broker || null,
+        brokerId:  editData.brokerId || null,
+        tradeId: editData.tradeId  || null,
+        strategy: editData.strategy || null,
+        counter: editData.counter || null,
+        buyValue: editData.buyValue || null,
+        sellValue: editData.sellValue || null,
+        dealer: decode.fullName || null,
+        pl: editData.pl || 0,
+      }
+    : {
+        Date: new Date(),
+        broker: "",
+        brokerId: null,
+        tradeId: null,
+        strategy: "",
+        counter: "",
+        buyValue: "",
+        sellValue: "",
+        dealer: decode.fullName,
+        pl: 0,
+      };
+
+  const editDataFunction = async (value) => {
+    setModelPopup(true);
+    setEditData(value);
+    initialValues.brokerId = fetchBrokerById(value.brokerId);
   };
+
+  const handleDelete = async (value) => {
+    try {
+      const response = await api.delete(`/delete_trade/${value.id}`);
+      if (response.status === 200) {
+        fetchTrade();
+        toast.success("Data deleted successfully");
+      }
+    } catch (error) {
+      console.error("Error deleting data:", error);
+    }
+  }
 
   const getStrategyData = async () => {
     try {
@@ -151,7 +196,7 @@ const DataManagement = () => {
       if (response.status === 200) {
         const formattedData = response.data.map((data) => ({
           "Strategy Id": data.id,
-          "Strategy Name": data.StrategyName
+          "Strategy Name": data.StrategyName,
         }));
         setStrategyData(formattedData);
       }
@@ -165,16 +210,23 @@ const DataManagement = () => {
       ...values,
       Date: values.Date ? dateConversion(values.Date) : null,
     };
-    const SubmitData = await api.post("/create_trade", submissionData, {
-      headers: {
-        Authorization: `bearer ${token}`,
-      },
-    });
-    if (SubmitData.status === 200) {
-      fetchTrade();
-      toast.success("Data added successfully");
-      handleClose();
-      setBrokerId([]);
+    if(!edit){
+      let SubmitData = await api.post("/create_trade", submissionData);
+      if (SubmitData.status === 200) {
+        fetchTrade();
+        toast.success("Data added successfully");
+        handleClose();
+        setBrokerId([]);
+      }
+    }
+    else{
+      let SubmitData = await api.put(`/update_trade/${submissionData.id}`, submissionData);
+      if (SubmitData.status === 200) {
+        fetchTrade();
+        toast.success("Data Updated successfully");
+        handleClose();
+        setBrokerId([]);
+      }
     }
   };
 
@@ -192,7 +244,6 @@ const DataManagement = () => {
           {({ values, errors, touched, setFieldValue }) => {
             // Function to calculate P/L
             const calculatePL = (buyValue, sellValue) => sellValue - buyValue;
-
             return (
               <Form>
                 <div className="flex gap-3 mb-3">
@@ -259,15 +310,16 @@ const DataManagement = () => {
                       onChange={(e) =>
                         setFieldValue("strategy", e.target.value)
                       }
-
                       error={touched.strategy && Boolean(errors.strategy)}
                     >
                       {strategyData.map((value) => (
-                        <MenuItem key={value["Strategy Name"]} value={value["Strategy Name"]}>
+                        <MenuItem
+                          key={value["Strategy Name"]}
+                          value={value["Strategy Name"]}
+                        >
                           {value["Strategy Name"]?.toUpperCase()}
                         </MenuItem>
                       ))}
-                      
                     </Select>
                   </FormControl>
                   <TextField
@@ -373,6 +425,7 @@ const DataManagement = () => {
             <TableColumn>Strategy</TableColumn>
             <TableColumn>P/L</TableColumn>
             <TableColumn>Date</TableColumn>
+            <TableColumn>Actions</TableColumn>
           </TableHeader>
           <TableBody>
             {paginatedData.map((value, index) => (
@@ -385,6 +438,36 @@ const DataManagement = () => {
                 <TableCell>{value.strategy?.toUpperCase()}</TableCell>
                 <TableCell>{value.sellValue - value.buyValue}</TableCell>
                 <TableCell>{value.Date?.toUpperCase()}</TableCell>
+                <TableCell>
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <IconButton>
+                        <CiMenuKebab />
+                      </IconButton>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                      aria-label="Action event example"
+                      onAction={(key) => {
+                        if (key === "delete") {
+                          handleDelete(value)
+                        } else if (key === "edit") {
+                          editDataFunction(value);
+                          setEdit(true);
+                        }
+                      }}
+                    >
+                      <DropdownItem
+                        key="delete"
+                        isDisabled={value.status === 3}
+                      >
+                        Delete
+                      </DropdownItem>
+                      <DropdownItem key="edit" isDisabled={value.status === 3}>
+                        Edit
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </Dropdown>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
