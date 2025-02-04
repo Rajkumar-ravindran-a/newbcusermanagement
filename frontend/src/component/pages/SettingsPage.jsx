@@ -15,6 +15,7 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@nextui-org/react";
+import CollapsableTable from "../table/CollapsableTable.jsx";
 
 // Column Titles
 // const brokerTableTitle = [
@@ -35,7 +36,7 @@ const brokerTableTitle = [
   "PropFund",
   // "Interest",
   // "Sharing",
-  "CostPerCr",
+  // "Cost Per Cr",
   "Total Fund",
   // "Start Date",
   // "Realease Date",
@@ -56,23 +57,18 @@ const AdminSettings = () => {
       if (response.status === 200) {
         const formattedData = response.data?.data?.map((broker) => ({
           "Broker Name": broker.brokerName,
-          "Gross Fund":
-            broker.grossFund !== undefined
-              ? `I ${broker.grossFundInterest} | F ${broker.grossFund} | S ${broker.grossFundSharing}`
-              : "-",
+          
+          "Gross Fund Interest": broker.grossFundInterest || "-",
+          "Gross Fund": broker.grossFund || "-",
+          "Gross Fund Sharing": broker.grossFundSharing || "-",
 
-          // Arbitrage Fund (Merged: Fund | Interest | Sharing)
-          "Arbitrage Fund":
-            broker.arbitrageFund !== undefined
-              ? `I ${broker.arbitrageFundInterest} | F ${broker.arbitrageFund} | S ${broker.arbitrageFundSharing}`
-              : "-",
+          "Arbitrage Fund Interest": broker.arbitrageFundInterest || "-",
+          "Arbitrage Fund": broker.arbitrageFund || "-",
+          "Arbitrage Fund Sharing": broker.arbitrageFundSharing || "-",
 
-          // Prop Fund (Merged: Fund | Interest | Sharing)
-          "Prop Fund":
-            broker.propFund !== undefined
-              ? `I ${broker.propFundInterest} | F ${broker.propFund} | S ${broker.propFundSharing}`
-              : "-",
-
+          "Prop Fund Interest": broker.propFundInterest || "-",
+          "Prop Fund": broker.propFund || "-",
+          "Prop Fund Sharing": broker.propFundSharing || "-",
           "Cost Per Cr": broker.costPerCr || "-",
 
           // Total Fund Calculation (Summing all fund values)
@@ -194,7 +190,7 @@ const AdminSettings = () => {
         />
 
         <div className="mt-4">
-          <CustomTable
+          {/* <CustomTable
             columnWidths={[
               "10%",
               "10%",
@@ -208,6 +204,11 @@ const AdminSettings = () => {
               "15%",
               "10%",
             ]}
+            title={brokerTableTitle}
+            tableData={brokerData}
+            loading={loader}
+          /> */}
+          <CollapsableTable
             title={brokerTableTitle}
             tableData={brokerData}
             loading={loader}
