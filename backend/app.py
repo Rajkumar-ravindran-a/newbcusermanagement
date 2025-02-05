@@ -970,15 +970,26 @@ async def getIdsByBroker(
 ):
     try:
         # Fetch IDs with optional filtering
-        results = (
-            db.query(Ids)
-            .filter(
-                Ids.brokerId == broker_id,
-                Ids.emloyeeId == current_user.id,
-                Ids.idStatus == 1,
+        print("User role", current_user.role)
+        if current_user.role == 1:
+            results = (
+                db.query(Ids)
+                .filter(
+                    Ids.brokerId == broker_id,
+                    Ids.idStatus == 1,
+                )
+                .all()
             )
-            .all()
-        )
+        else:
+            results = (
+                db.query(Ids)
+                .filter(
+                    Ids.brokerId == broker_id,
+                    Ids.emloyeeId == current_user.id,
+                    Ids.idStatus == 1,
+                )
+                .all()
+            )
 
         if not results:
             return {"status_code": 404, "detail": "No IDs found"}
