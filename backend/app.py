@@ -829,7 +829,7 @@ async def getBroker(
         else:
             brokerData = (
                 db.query(Brokers)
-                .filter(Brokers.brokerStatus == status)
+                .filter(Brokers.brokerStatus == status, Brokers.brokerStatus != 4)
                 .order_by(desc(Brokers.createAt))
                 .all()
             )
