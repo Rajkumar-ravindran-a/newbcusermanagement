@@ -99,6 +99,9 @@ const AdminSettings = () => {
                 <DropdownItem key="edit" isDisabled={broker.status === 3}>
                   Edit
                 </DropdownItem>
+                <DropdownItem key="delete" >
+                  Delete
+                </DropdownItem>
               </DropdownMenu>
             </Dropdown>
           ),
@@ -115,6 +118,23 @@ const AdminSettings = () => {
     }
   }, []);
 
+
+  const deleteBroker = async(broker) =>{
+    try{
+      console.warn(broker);
+      const response = await api.put(`/softDeleteBroker/${broker.id}`);
+      if(response.status === 200){
+        toast.success(`Broker "${broker.brokerName}" deleted successfully.`);
+        getBrokerData();
+      } else {
+        toast.error(`Failed to delete broker "${broker.brokerName}".`);
+      }
+    } catch(error){
+      console.error(error);
+      toast.error("Error deleting broker.");
+    }
+  }
+
   // Handle Dropdown Actions
   const handleDropdownAction = (action, broker) => {
     if (action === "release") {
@@ -122,6 +142,8 @@ const AdminSettings = () => {
     } else if (action === "edit") {
       setSelectedBroker(broker);
       setAnchorEl(document.body);
+    } else if (action === "delete"){
+      deleteBroker(broker);
     }
   };
 

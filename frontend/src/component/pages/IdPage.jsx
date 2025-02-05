@@ -94,7 +94,7 @@ const AdminSettings = () => {
           Nism: data.nism?.toUpperCase(),
           IdType: data.idType?.toUpperCase(),
           Action: (
-            <Dropdown style={{zIndex:-2}}>
+            <Dropdown>
               <DropdownTrigger>
                 <IconButton>
                   <CiMenuKebab />
@@ -107,6 +107,8 @@ const AdminSettings = () => {
                     releaseId(data);
                   } else if (key === "edit") {
                     editBroker(data);
+                  } else if(key === "delete"){
+                    deleteId(data);
                   }
                 }}
               >
@@ -115,6 +117,9 @@ const AdminSettings = () => {
                 </DropdownItem>
                 <DropdownItem key="edit" isDisabled={data.status === 3}>
                   Edit
+                </DropdownItem>
+                <DropdownItem key="delete">
+                  Delete
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>
@@ -179,6 +184,17 @@ const AdminSettings = () => {
       toast.error("Error releasing broker.");
     }
   };
+
+  const deleteId = async (broker) => {
+    try {
+      console.warn(broker)
+      await api.put(`/changeStatus/${broker.recordId}`);
+      toast.success("ID deleted successfully.");
+      getIdData();
+    } catch (error) {
+      toast.error("Error deleting ID.");
+    }
+  }
 
   const handleSubmit = async (values, { resetForm }) => {
     try {

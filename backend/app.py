@@ -699,6 +699,32 @@ async def createId(
         print("Error", err)
         raise HTTPException(status_code=500, detail="internal server error")
 
+@app.put("/changeStatus/{id}")
+async def changeStatus(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    if current_user.role != 1:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    existing_id = db.query(Ids).filter(Ids.recordId == id).first()
+
+    if not existing_id:
+        raise HTTPException(status_code=404, detail="ID not found")
+
+    try:
+        existing_id.idStatus = 4
+        db.commit()
+        return {"message": "ID status Deleted successfully"}
+    except exc.SQLAlchemyError as e:
+        db.rollback()
+        print("Error", e)
+        raise HTTPException(status_code=500, detail="Database error")
+    except Exception as err:
+        print("Error", err)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @app.put("/updateId/{record_id}")
 async def update_id(
@@ -754,14 +780,14 @@ async def get_ids(
         if broker_id:
             # Filter out brokers with status 3
             results = (
-                db.query(Ids).filter(Ids.brokerId == broker_id, Ids.brokerId != 3).all()
+                db.query(Ids).filter(Ids.brokerId == broker_id, Ids.brokerId != 3, Ids.brokerId != 4).all()
             )
         else:
             results = (
                 db.query(Ids, Brokers, Users)
                 .outerjoin(Brokers, Brokers.id == Ids.brokerId)
                 .outerjoin(Users, Users.id == Ids.emloyeeId)
-                # .filter(Brokers.brokerStatus != 3)  # Exclude brokers with status 3
+                .filter(Ids.idStatus != 4)
                 .all()
             )
 
@@ -839,6 +865,33 @@ async def getBroker(
 
     except Exception as e:
         print("Error in getBroker API:", e)
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.put("/softDeleteBroker/{id}")
+async def softDeleteBroker(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    if current_user.role != 1:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    existing_broker = db.query(Brokers).filter(Brokers.id == id).first()
+
+    if not existing_broker:
+        raise HTTPException(status_code=404, detail="Broker not found")
+
+    try:
+        existing_broker.brokerStatus = 4
+        db.commit()
+        return {"message": "Broker deleted successfully"}
+    except exc.SQLAlchemyError as e:
+        db.rollback()
+        print("Error", e)
+        raise HTTPException(status_code=500, detail="Database error")
+    except Exception as err:
+        print("Error", err)
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

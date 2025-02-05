@@ -168,13 +168,12 @@ const CustomTable = ({
                       key={`${rowIndex}-${colIndex}`}
                       align="center"
                       sx={{
-                        width: columnWidths[colIndex] || "auto",
-                        minWidth: columnWidths[colIndex] || 150,
-                        maxWidth: columnWidths[colIndex] || 300,
-                        whiteSpace: "nowrap",
+                        width: columnWidths[colIndex] || "auto", // Use dynamic width
+                        minWidth: columnWidths[colIndex] || 150, // Prevent shrinking
+                        maxWidth: columnWidths[colIndex] || 300, // Optional: Limit max width
+                        whiteSpace: "nowrap", // Prevent text wrapping
                         overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        // backgroundColor: "white"
+                        textOverflow: "ellipsis", // Ellipsis for overflow text
                       }}
                     >
                       {key === "action" && renderAction ? (
