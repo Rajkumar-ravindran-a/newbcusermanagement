@@ -75,7 +75,7 @@ const AdminSettings = () => {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Error fetching broker data.");
+      // toast.error("Error fetching broker data.");
     }
   };
 
