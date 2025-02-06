@@ -44,7 +44,7 @@ async def createTable(session: Session = Depends(get_db)):
             role_count = (session.execute(select(userRole))).scalars().all()
             if not role_count:
                 # Insert initial data
-                roleData = ["Admin", "Dealer", "Trader"]
+                roleData = ["Admin", "Dealer", "Trader", "Deleted"]
                 for role in roleData:
                     roleDatacommit = userRole(roleName=role)
                     session.add(roleDatacommit)
@@ -566,7 +566,7 @@ async def create_broker(
     # Check if a broker with the same name and status not 3 exists
     existing_broker = (
         db.query(Brokers)
-        .filter(Brokers.brokerName == broker_name, Brokers.brokerStatus != 3)
+        .filter(Brokers.brokerName == broker_name, Brokers.brokerStatus != 3, Brokers.brokerStatus != 4)
         .first()
     )
 
