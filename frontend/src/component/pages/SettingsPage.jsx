@@ -30,14 +30,14 @@ import CollapsableTable from "../table/CollapsableTable.jsx";
 // ];
 
 const brokerTableTitle = [
-  "BrokerName",
-  "GrossFund",
-  "ArbitrageFund",
-  "PropFund",
+  "Broker Name",
+  "Gross",
+  "Arbitrage",
+  "Prop",
   // "Interest",
   // "Sharing",
   // "Cost Per Cr",
-  "Total Fund",
+  "Total ",
   // "Start Date",
   // "Realease Date",
   "Action",
@@ -53,23 +53,23 @@ const AdminSettings = () => {
   const getBrokerData = useCallback(async () => {
     setLoader(true);
     try {
-      const response = await api.get("/getAllBroker");
+      const response = await api.get("/getAllBroker/1");
       if (response.status === 200) {
         const formattedData = response.data?.data?.map((broker) => ({
           "Broker Name": broker.brokerName,
           
-          "Gross Fund Interest": broker.grossFundInterest || "-",
-          "Gross Fund": broker.grossFund || "-",
-          "Gross Fund Sharing": broker.grossFundSharing || "-",
+          "Gross Fund Interest": broker.grossFundInterest || 0,
+          "Gross Fund": broker.grossFund || 0,
+          "Gross Fund Sharing": broker.grossFundSharing || 0,
 
-          "Arbitrage Fund Interest": broker.arbitrageFundInterest || "-",
-          "Arbitrage Fund": broker.arbitrageFund || "-",
-          "Arbitrage Fund Sharing": broker.arbitrageFundSharing || "-",
+          "Arbitrage Fund Interest": broker.arbitrageFundInterest || 0,
+          "Arbitrage Fund": broker.arbitrageFund || 0,
+          "Arbitrage Fund Sharing": broker.arbitrageFundSharing || 0,
 
-          "Prop Fund Interest": broker.propFundInterest || "-",
-          "Prop Fund": broker.propFund || "-",
-          "Prop Fund Sharing": broker.propFundSharing || "-",
-          "Cost Per Cr": broker.costPerCr || "-",
+          "Prop Fund Interest": broker.propFundInterest || 0,
+          "Prop Fund": broker.propFund || 0,
+          "Prop Fund Sharing": broker.propFundSharing || 0,
+          "Cost Per Cr": broker.costPerCr || 0,
 
           // Total Fund Calculation (Summing all fund values)
           "Total Fund":
@@ -77,7 +77,7 @@ const AdminSettings = () => {
             broker.arbitrageFund !== undefined &&
             broker.propFund !== undefined
               ? broker.grossFund + broker.arbitrageFund + broker.propFund
-              : "-",
+              : 0,
 
           // "Start Date": broker.startDate || "-",
           // "Release Date": broker.releaseDate || "-",

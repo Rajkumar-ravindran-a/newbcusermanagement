@@ -96,7 +96,7 @@ const CustomTable = ({
                     key={index}
                     align="center"
                     sx={{
-                      fontWeight: "bold",
+                      // fontWeight: "bold",
                       width: columnWidths[index] || "auto",
                       minWidth: columnWidths[index] || 150,
                       maxWidth: columnWidths[index] || 300,

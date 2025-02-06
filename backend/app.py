@@ -816,7 +816,7 @@ async def get_ids(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@app.get("/getAllBroker")
+@app.get("/getAllBroker/{status}")
 async def getBroker(
     status: Optional[int] = None,
     db: Session = Depends(get_db),
@@ -825,6 +825,7 @@ async def getBroker(
     try:
         # Fetch brokers based on status
         if status is None:
+            print("No status")
             brokerData = db.query(Brokers).all()
         else:
             brokerData = (

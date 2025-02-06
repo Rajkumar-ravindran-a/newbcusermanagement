@@ -80,7 +80,7 @@ const CollapsableTable = ({
                   key={index}
                   align="center"
                   sx={{
-                    fontWeight: "bold",
+                    // fontWeight: "bold",
                     width: columnWidths[index] || "auto",
                     minWidth: columnWidths[index] || 150,
                     maxWidth: columnWidths[index] || 300,
@@ -88,6 +88,10 @@ const CollapsableTable = ({
                     top: 0,
                     backgroundColor: "white",
                     zIndex: 2,
+                    padding: "10px 15px",
+                    height: "44px",
+                    fontSize: "16px",
+                    fontWeight: 300,
                   }}
                 >
                   <TableSortLabel
@@ -283,7 +287,7 @@ const CollapsableTable = ({
                             </Table>
                           </TableContainer>
                         </Paper>
-                        
+
                         {/* <TableContainer>
                           <Table>
                             <TableHead>
@@ -303,26 +307,24 @@ const CollapsableTable = ({
                           </Table>
                         </TableContainer> */}
                       </div>
-                      <Paper sx={{margin:"1rem"}}>
-                          <TableContainer>
-                            <Table>
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell>Cost per CR</TableCell>
-                                  <TableCell>Total Fund</TableCell>
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                <TableRow>
-                                  <TableCell>
-                                    {rowData["Cost Per Cr"]}
-                                  </TableCell>
-                                  <TableCell>{rowData["Total Fund"]}</TableCell>
-                                </TableRow>
-                              </TableBody>
-                            </Table>
-                          </TableContainer>
-                        </Paper>
+                      <Paper sx={{ margin: "1rem" }}>
+                        <TableContainer>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>Cost per CR</TableCell>
+                                <TableCell>Total Fund</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell>{rowData["Cost Per Cr"]}</TableCell>
+                                <TableCell>{rowData["Total Fund"]}</TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </Paper>
                     </Collapse>
                   </TableCell>
                 </TableRow>
