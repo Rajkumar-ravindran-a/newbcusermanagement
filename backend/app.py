@@ -815,7 +815,7 @@ async def get_ids(
         print("Error:", err)
         raise HTTPException(status_code=500, detail="Internal server error")
 
-
+@app.get("/getAllBroker")
 @app.get("/getAllBroker/{status}")
 async def getBroker(
     status: Optional[int] = None,
@@ -826,7 +826,7 @@ async def getBroker(
         # Fetch brokers based on status
         if status is None:
             print("No status")
-            brokerData = db.query(Brokers).all()
+            brokerData = db.query(Brokers).filter(Brokers.brokerStatus != 4).all()
         else:
             brokerData = (
                 db.query(Brokers)

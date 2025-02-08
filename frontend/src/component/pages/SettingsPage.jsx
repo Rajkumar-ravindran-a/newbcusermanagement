@@ -53,7 +53,7 @@ const AdminSettings = () => {
   const getBrokerData = useCallback(async () => {
     setLoader(true);
     try {
-      const response = await api.get("/getAllBroker/1");
+      const response = await api.get("/getAllBroker");
       if (response.status === 200) {
         const formattedData = response.data?.data?.map((broker) => ({
           "Broker Name": broker.brokerName,
