@@ -585,6 +585,15 @@ async def create_broker(
     prop_fund = int(response.get("propFund", 0))
     prop_fund_interest = float(response.get("propFundInterest", 0))
     prop_fund_sharing = float(response.get("propFundSharing", 0))
+    
+    b2p_fund = int(response.get("b2pFund", 0))
+    b2p_fund_interest = float(response.get("b2pFundInterest", 0))
+    b2p_fund_sharing = float(response.get("b2pFundSharing", 0))
+    
+    client_fund = int(response.get("clientFund", 0))
+    client_fund_interest = float(response.get("clientFundInterest", 0))
+    client_fund_sharing = float(response.get("clientFundSharing", 0))
+    
 
     cost_per_cr = float(response.get("costPerCr", 0))
 
@@ -603,6 +612,12 @@ async def create_broker(
         propFund=prop_fund,
         propFundInterest=prop_fund_interest,
         propFundSharing=prop_fund_sharing,
+        b2pFund=b2p_fund,
+        b2pFundInterest=b2p_fund_interest,
+        b2pFundSharing=b2p_fund_sharing,
+        clientFund=client_fund,
+        clientFundInterest=client_fund_interest,
+        clientSharing=client_fund_sharing,
         costPerCr=cost_per_cr,
         totalFund=total_fund,
     )
@@ -851,6 +866,12 @@ async def getBroker(
                     "propFund": datas.propFund,
                     "propFundInterest": datas.propFundInterest,
                     "propFundSharing": datas.propFundSharing,
+                    "b2pFund": datas.b2pFund,
+                    "b2pFundInterest": datas.b2pFundInterest,
+                    "b2pFundSharing": datas.b2pFundSharing,
+                    "clientFund": datas.clientFund,
+                    "clientFundInterest": datas.clientFundInterest,
+                    "clientFundSharing": datas.clientSharing,
                     "costPerCr": datas.costPerCr,
                     "startDate": datas.createAt.strftime("%Y-%m-%d %H:%M:%S"),
                     "status": datas.brokerStatus,

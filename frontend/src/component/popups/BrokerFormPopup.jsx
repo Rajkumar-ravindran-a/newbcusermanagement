@@ -52,6 +52,36 @@ const brokerValidationSchema = Yup.object().shape({
     .max(100, "Sharing cannot exceed 100%")
     .required("Prop Fund Sharing is required"),
 
+  b2pFund: Yup.number()
+    .typeError("Client Fund must be a number")
+    .min(0, "Client Fund must be greater than or equal to 0")
+    .required("Client Fund is required"),
+  b2pFundInterest: Yup.number()
+    .typeError("Client Fund Interest must be a number")
+    .min(0, "Interest must be at least 0%")
+    .max(100, "Interest cannot exceed 100%")
+    .required("Client Fund Interest is required"),
+  b2pFundSharing: Yup.number()
+    .typeError("Client Fund Sharing must be a number")
+    .min(0, "Sharing must be at least 0%")
+    .max(100, "Sharing cannot exceed 100%")
+    .required("Client Fund Sharing is required"),
+
+  clientFund: Yup.number()
+    .typeError("Client Fund must be a number")
+    .min(0, "Client Fund must be greater than or equal to 0")
+    .required("Client Fund is required"),
+  clientFundInterest: Yup.number()
+    .typeError("Client Fund Interest must be a number")
+    .min(0, "Interest must be at least 0%")
+    .max(100, "Interest cannot exceed 100%")
+    .required("Client Fund Interest is required"),
+  clientFundSharing: Yup.number()
+    .typeError("Client Fund Sharing must be a number")
+    .min(0, "Sharing must be at least 0%")
+    .max(100, "Sharing cannot exceed 100%")
+    .required("Client Fund Sharing is required"),
+
   costPerCr: Yup.number()
     .typeError("Cost must be a number")
     .min(0, "Cost must be greater than or equal to 0")
@@ -72,6 +102,12 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
     propFund: brokerData?.propFund || 0,
     propFundInterest: brokerData?.propFundInterest || 0,
     propFundSharing: brokerData?.propFundSharing || 0,
+    b2pFund: brokerData?.b2pFund || 0,
+    b2pFundInterest: brokerData?.b2pFundInterest || 0,
+    b2pFundSharing: brokerData?.b2pFundSharing || 0,
+    clientFund: brokerData?.b2pFund || 0,
+    clientFundInterest: brokerData?.b2pFundInterest || 0,
+    clientFundSharing: brokerData?.b2pFundSharing || 0,
     costPerCr: brokerData?.costPerCr || 0,
   };
 
@@ -107,6 +143,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
           p: 4,
           borderRadius: 2,
           overflowY: "auto",
+          height:600
         }}
       >
         <Typography variant="h6" sx={{ marginBottom: "20px" }}>
@@ -119,7 +156,14 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
           onSubmit={handleSubmit}
           enableReinitialize
         >
-          {({ values, errors, touched, handleChange, handleBlur, setFieldValue }) => (
+          {({
+            values,
+            errors,
+            touched,
+            handleChange,
+            handleBlur,
+            setFieldValue,
+          }) => (
             <Form>
               <div className="flex flex-col gap-4">
                 {/* Broker Name */}
@@ -268,6 +312,90 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     }
                     helperText={
                       touched.propFundSharing && errors.propFundSharing
+                    }
+                    fullWidth
+                  />
+                </div>
+
+                {/* B2P Fund */}
+
+                <div className="flex gap-4">
+                  <TextField
+                    name="B2P"
+                    label="B2P"
+                    value={values.b2pFund}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.b2pFund && Boolean(errors.b2pFund)}
+                    helperText={touched.b2pFund && errors.b2pFund}
+                    fullWidth
+                  />
+                  <TextField
+                    name="B2P Interest"
+                    label="Interest (%)"
+                    value={values.b2pFundInterest}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={
+                      touched.b2pFundInterest && Boolean(errors.b2pFundInterest)
+                    }
+                    helperText={
+                      touched.b2pFundInterest && errors.b2pFundInterest
+                    }
+                    fullWidth
+                  />
+                  <TextField
+                    name="B2P Sharing"
+                    label="Sharing (%)"
+                    value={values.b2pFundSharing}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={
+                      touched.b2pFundSharing && Boolean(errors.b2pFundSharing)
+                    }
+                    helperText={touched.b2pFundSharing && errors.b2pFundSharing}
+                    fullWidth
+                  />
+                </div>
+                {/* Client Fund */}
+                <div className="flex gap-4">
+                  <TextField
+                    name="clientFund"
+                    label="Client"
+                    value={values.clientFund}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={touched.clientFund && Boolean(errors.clientFund)}
+                    helperText={touched.clientFund && errors.clientFund}
+                    fullWidth
+                  />
+                  <TextField
+                    name="clientFundInterest"
+                    label="Interest (%)"
+                    value={values.clientFundInterest}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={
+                      touched.clientFundInterest &&
+                      Boolean(errors.clientFundInterest)
+                    }
+                    helperText={
+                      touched.clientFundInterest && errors.clientFundInterest
+                    }
+                    fullWidth
+                  />
+                  <TextField
+                    name="clientFundSharing"
+                    label="Sharing (%)"
+                    value={values.clientFundSharing}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={
+                      touched.clientFundSharing &&
+                      Boolean(errors.clientFundSharing)
+                    }
+                    helperText={
+                      touched.clientFundSharing && errors.clientFundSharing
                     }
                     fullWidth
                   />

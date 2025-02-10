@@ -18,10 +18,28 @@ const CustomTable = ({
   tableData = [],
   renderAction,
   loading,
+  onRowClick,
 }) => {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
+
+  const excludedKeys = [
+    "status",
+    "id",
+    "brokerId",
+    "fundAllocated",
+    "Record Id",
+    "Gross Fund Interest",
+    "Gross Fund Sharing",
+    "Arbitrage Fund Interest",
+    "Arbitrage Fund Sharing",
+    "Prop Fund Interest",
+    "Prop Fund Sharing",
+    "Cost Per Cr",
+    "b2pFundsharing",
+    "b2pFundInterest",
+    "clientFundSharing",
+    "clientFundInterest",
+  ];
 
   const handleSort = (columnKey) => {
     setSortConfig((prevConfig) => {
@@ -47,56 +65,19 @@ const CustomTable = ({
     });
   }, [tableData, sortConfig]);
 
-  const handleButtonClick = (status, id) => {
-    if (status === 1) {
-      renderAction(id);
-    } else {
-      renderAction();
-    }
-  };
-
   return (
     <Paper className="custom">
       <TableContainer className="tble-container">
         <Table className="tble-custom" stickyHeader>
           <TableHead>
             <TableRow className="tble-head">
-              {title.map((header, index) => {
-                if (header === "Gross Fund") {
-                  return (
-                    <TableCell
-                      key="grossFund"
-                      align="center"
-                      sx={{
-                        // fontWeight: "bold",
-                        // minWidth: 200,
-                        // maxWidth: 300,
-                        position: "sticky",
-                        top: 0,
-                        backgroundColor: "white",
-                        zIndex: 1,
-                      }}
-                    >
-                      <TableSortLabel
-                        active={sortConfig.key === "grossFund"}
-                        direction={
-                          sortConfig.key === "grossFund"
-                            ? sortConfig.direction
-                            : "asc"
-                        }
-                        onClick={() => handleSort("grossFund")}
-                      >
-                        Gross Fund (Fund | Interest | Sharing)
-                      </TableSortLabel>
-                    </TableCell>
-                  );
-                }
-                return (
+              {title
+                .filter((header) => !excludedKeys.includes(header))
+                .map((header, index) => (
                   <TableCell
                     key={index}
                     align="center"
                     sx={{
-                      // fontWeight: "bold",
                       width: columnWidths[index] || "auto",
                       minWidth: columnWidths[index] || 150,
                       maxWidth: columnWidths[index] || 300,
@@ -118,8 +99,7 @@ const CustomTable = ({
                       {header?.toUpperCase()}
                     </TableSortLabel>
                   </TableCell>
-                );
-              })}
+                ))}
             </TableRow>
           </TableHead>
 
@@ -132,56 +112,36 @@ const CustomTable = ({
               </TableRow>
             )}
             {sortedData.map((rowData, rowIndex) => (
-              <TableRow key={rowIndex}>
-                {Object.keys(rowData).map((key, colIndex) => {
-                  if (
-                    [
-                      "status",
-                      "id",
-                      "brokerId",
-                      "fundAllocated",
-                      "Record Id",
-                    ].includes(key)
-                  )
-                    return null;
-
-                  if (key === "grossFund") {
-                    return (
-                      <TableCell
-                        key={`${rowIndex}-grossFund`}
-                        align="center"
-                        sx={{
-                          minWidth: 200,
-                          maxWidth: 300,
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {`${rowData["grossFund"].toUpperCase()} | ${rowData["grossFundInterest"].toUpperCase()} | ${rowData["grossFundSharing"].toUpperCase()}`}
-                      </TableCell>
-                    );
-                  }
-
-                  return (
+              <TableRow
+                key={rowIndex}
+                onClick={() => onRowClick && onRowClick(rowData)}
+                sx={{
+                  cursor: onRowClick ? "pointer" : "default",
+                  "&:hover": onRowClick ? { backgroundColor: "#f0f0f0" } : {},
+                }}
+              >
+                {Object.keys(rowData)
+                  .filter((key) => !excludedKeys.includes(key)) // Exclude columns
+                  .map((key, colIndex) => (
                     <TableCell
                       key={`${rowIndex}-${colIndex}`}
                       align="center"
                       sx={{
-                        width: columnWidths[colIndex] || "auto", // Use dynamic width
-                        minWidth: columnWidths[colIndex] || 150, // Prevent shrinking
-                        maxWidth: columnWidths[colIndex] || 300, // Optional: Limit max width
-                        whiteSpace: "nowrap", // Prevent text wrapping
+                        width: columnWidths[colIndex] || "auto",
+                        minWidth: columnWidths[colIndex] || 150,
+                        maxWidth: columnWidths[colIndex] || 300,
+                        whiteSpace: "nowrap",
                         overflow: "hidden",
-                        textOverflow: "ellipsis", // Ellipsis for overflow text
+                        textOverflow: "ellipsis",
                       }}
                     >
                       {key === "action" && renderAction ? (
                         <Button
                           isDisabled={rowData["status"] === 3}
-                          onPress={() =>
-                            handleButtonClick(rowData["status"], rowData["id"])
-                          }
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            renderAction(rowData["id"]);
+                          }}
                         >
                           {rowData["status"] === 1 ? "Release" : "Released"}
                         </Button>
@@ -189,8 +149,7 @@ const CustomTable = ({
                         rowData[key]
                       )}
                     </TableCell>
-                  );
-                })}
+                  ))}
               </TableRow>
             ))}
             {!loading && sortedData.length === 0 && (

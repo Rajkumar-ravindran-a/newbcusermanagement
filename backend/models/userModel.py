@@ -5,6 +5,7 @@ from config.dbconnection import engine, base
 
 base = base
 
+
 class Brokers(base):
     __tablename__ = "brokers"
 
@@ -19,6 +20,12 @@ class Brokers(base):
     propFund = Column(Integer, default=0)
     propFundInterest = Column(Float, default=0.0)
     propFundSharing = Column(Float, default=0.0)
+    b2pFund = Column(Integer, default=0)
+    b2pFundInterest = Column(Float, default=0.0)
+    b2pFundSharing = Column(Float, default=0.0)
+    clientFund = Column(Integer, default=0)
+    clientFundInterest = Column(Float, default=0.0)
+    clientSharing = Column(Float, default=0.0)
     costPerCr = Column(Float, default=0.0)
     totalFund = Column(Integer, default=0)
     releaseDate = Column(DateTime, nullable=True)
@@ -43,7 +50,8 @@ class Brokers(base):
 #     releaseDate = Column(DateTime, nullable=True)
 #     createAt = Column(DateTime, index=True, default=datetime.now)
 #     updatedAt = Column(DateTime, index=True, default=datetime.now)
-    
+
+
 class Ids(base):
     __tablename__ = "ids"
     recordId = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -70,6 +78,7 @@ class Status(base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     statusName = Column(String(50), index=True, nullable=False)
 
+
 class Users(base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -88,8 +97,8 @@ class Users(base):
     userStatus = Column(Integer, ForeignKey("status.id"), index=True, default=1)
     createAt = Column(DateTime, index=True, default=datetime.now)
     updatedAt = Column(DateTime, index=True, default=datetime.now)
-    
-    
+
+
 class TradeData(base):
     __tablename__ = "trade_data"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -103,10 +112,12 @@ class TradeData(base):
     sellValue = Column(Integer, nullable=False)
     userId = Column(Integer, ForeignKey("users.id"), nullable=False)
 
+
 class Strategy(base):
     __tablename__ = "strategy"
     id = Column(Integer, autoincrement=True, primary_key=True)
     StrategyName = Column(String, nullable=False)
+
 
 class RegisterUser(BaseModel):
     firstName: str
@@ -116,11 +127,11 @@ class RegisterUser(BaseModel):
     pwd: str
 
 
-
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     base.metadata.create_all(bind=engine)
     print("Tables created successfully!")
