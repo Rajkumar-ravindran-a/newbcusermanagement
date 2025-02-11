@@ -98,7 +98,7 @@ const CustomTable = ({
                       <div className="flex flex-col">
                         <div className="headertext">{header?.toUpperCase()}</div>
                         <div className="total-div">
-                          {headerTotal.length > 0 &&
+                          {headerTotal && headerTotal?.length > 0 &&
                           Object.keys(headerTotal[0]).includes(header)
                             ? headerTotal[0][header]
                             : null}
