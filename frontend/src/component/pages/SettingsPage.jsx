@@ -67,6 +67,8 @@ const AdminSettings = () => {
   const [selectedBroker, setSelectedBroker] = useState(null);
   const [rowPopups, setRowPopups] = useState(false);
   const [rowData, setRowData] = useState({});
+  const [brokerTotel, setBrokerTotel] = useState([]);
+  const [viewByPopup, setViewByPopup] = useState(false)
 
   // Fetch Brokers Data
   const getBrokerData = useCallback(async () => {
@@ -132,6 +134,15 @@ const AdminSettings = () => {
             </Dropdown>
           ),
         }));
+        
+        const brokerTable = response?.data?.totals?.map((brokerTotal) => ({
+          Gross: brokerTotal.totalGrossFund,
+          Arbitrage: brokerTotal.totalArbitrageFund,
+          Prop: brokerTotal.totalPropFund,
+          B2P: brokerTotal.totalB2pFund,
+          Client: brokerTotal.totalClientFund,
+        }));
+        setBrokerTotel(brokerTable);
         setBrokerData(formattedData);
       } else {
         toast.error("Failed to fetch broker data.");
@@ -215,7 +226,6 @@ const AdminSettings = () => {
             <IoClose />
           </IconButton>
         </div>
-
         <div
           style={{
             padding: 10,
@@ -395,29 +405,19 @@ const AdminSettings = () => {
           handleClose={handleClosePopover}
           onFormSubmit={getBrokerData}
           brokerData={selectedBroker}
+          isDisable={viewByPopup}
         />
 
         <div className="mt-4">
           <CustomTable
-            // columnWidths={[
-            //   "10%",
-            //   "10%",
-            //   "10%",
-            //   "10%",
-            //   "15%",
-            //   "10%",
-            //   "10%",
-            //   "10%",
-            //   "40%",
-            //   "15%",
-            //   "10%",
-            // ]}
             title={brokerTableTitle}
             tableData={brokerData}
+            headerTotal={brokerTotel}
             loading={loader}
             onRowClick={(rowData) => {
               setRowPopups(true);
-              console.log(rowData, "=-=-=-");
+              // setViewByPopup(true)
+              // handleDropdownAction("edit",rowData)
               setRowData(rowData);
             }}
           />

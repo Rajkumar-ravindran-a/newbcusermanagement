@@ -852,7 +852,19 @@ async def getBroker(
 
         # Prepare output data
         outPut = []
+        total_gross_fund = 0
+        total_b2p_fund = 0
+        total_arbitrage_fund = 0
+        total_prop_fund = 0
+        total_client_fund = 0
+
         for datas in brokerData:
+            total_gross_fund += datas.grossFund
+            total_b2p_fund += datas.b2pFund
+            total_arbitrage_fund += datas.arbitrageFund
+            total_prop_fund += datas.propFund
+            total_client_fund += datas.clientFund
+
             outPut.append(
                 {
                     "id": datas.id,
@@ -883,7 +895,16 @@ async def getBroker(
                 }
             )
 
-        return {"message": "Brokers fetched successfully", "data": outPut}
+        # Add total fund calculations
+        totals = [{
+            "totalGrossFund": total_gross_fund,
+            "totalB2pFund": total_b2p_fund,
+            "totalArbitrageFund": total_arbitrage_fund,
+            "totalPropFund": total_prop_fund,
+            "totalClientFund": total_client_fund,
+        }]
+
+        return {"message": "Brokers fetched successfully", "data": outPut, "totals": totals}
 
     except Exception as e:
         print("Error in getBroker API:", e)
@@ -1012,10 +1033,17 @@ async def update_broker(
     broker.grossFund = int(response.get("grossFund", broker.grossFund))
     broker.arbitrageFund = int(response.get("arbitrageFund", broker.arbitrageFund))
     broker.propFund = int(response.get("propFund", broker.propFund))
-
+    broker.b2pFund = int(response.get("b2pFund", broker.b2pFund))
+    broker.clientFund = int(response.get("clientFund", broker.clientFund))
     # Assuming these are calculations for the new fields
-    broker.interest = response.get("interest", broker.interest)
-    broker.sharing = response.get("sharing", broker.sharing)
+    broker.grossFundInterest = response.get("grossFundInterest", broker.grossFundInterest)
+    broker.grossFundSharing = response.get("grossFundSharing", broker.grossFundSharing)
+    broker.arbitrageFundInterest = response.get("arbitrageFundInterest", broker.arbitrageFundInterest)
+    broker.arbitrageFundSharing = response.get("arbitrageFundSharing", broker.arbitrageFundSharing)
+    broker.b2pFundInterest = response.get("b2pFundInterest", broker.b2pFundInterest)
+    broker.b2pFundSharing = response.get("b2pFundSharing", broker.b2pFundSharing)
+    broker.clientFundInterest = response.get("clientFundInterest", broker.clientFundInterest)
+    broker.clientFundInterest = response.get("clientFundInterest", broker.clientFundInterest)
     broker.costPerCr = response.get("costPerCr", broker.costPerCr)
     broker.totalFund = (
         broker.grossFund + broker.arbitrageFund + broker.propFund

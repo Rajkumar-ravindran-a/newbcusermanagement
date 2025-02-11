@@ -89,7 +89,13 @@ const brokerValidationSchema = Yup.object().shape({
 });
 
 // Broker Form Popup Component
-const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
+const BrokerFormPopup = ({
+  open,
+  handleClose,
+  onFormSubmit,
+  brokerData,
+  isDisable,
+}) => {
   const initialValues = {
     id: brokerData?.id || null,
     brokerName: brokerData?.brokerName || "",
@@ -143,7 +149,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
           p: 4,
           borderRadius: 2,
           overflowY: "auto",
-          height:600
+          height: 600,
         }}
       >
         <Typography variant="h6" sx={{ marginBottom: "20px" }}>
@@ -179,6 +185,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                   error={touched.brokerName && Boolean(errors.brokerName)}
                   helperText={touched.brokerName && errors.brokerName}
                   fullWidth
+                  disabled={isDisable}
                   inputProps={{ style: { textTransform: "uppercase" } }} // Ensure UI displays uppercase
                 />
 
@@ -190,6 +197,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     value={values.grossFund}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                    disabled={isDisable}
                     error={touched.grossFund && Boolean(errors.grossFund)}
                     helperText={touched.grossFund && errors.grossFund}
                     fullWidth
@@ -200,6 +208,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     value={values.grossFundInterest}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                    disabled={isDisable}
                     error={
                       touched.grossFundInterest &&
                       Boolean(errors.grossFundInterest)
@@ -215,6 +224,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     value={values.grossFundSharing}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                    disabled={isDisable}
                     error={
                       touched.grossFundSharing &&
                       Boolean(errors.grossFundSharing)
@@ -234,6 +244,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     value={values.arbitrageFund}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                    disabled={isDisable}
                     error={
                       touched.arbitrageFund && Boolean(errors.arbitrageFund)
                     }
@@ -246,6 +257,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     value={values.arbitrageFundInterest}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                    disabled={isDisable}
                     error={
                       touched.arbitrageFundInterest &&
                       Boolean(errors.arbitrageFundInterest)
@@ -262,6 +274,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     value={values.arbitrageFundSharing}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                    disabled={isDisable}
                     error={
                       touched.arbitrageFundSharing &&
                       Boolean(errors.arbitrageFundSharing)
@@ -280,6 +293,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     name="propFund"
                     label="Prop Fund (1Cr)"
                     value={values.propFund}
+                    disabled={isDisable}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={touched.propFund && Boolean(errors.propFund)}
@@ -290,6 +304,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     name="propFundInterest"
                     label="Interest (%)"
                     value={values.propFundInterest}
+                    disabled={isDisable}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={
@@ -305,6 +320,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     name="propFundSharing"
                     label="Sharing (%)"
                     value={values.propFundSharing}
+                    disabled={isDisable}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={
@@ -321,9 +337,10 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
 
                 <div className="flex gap-4">
                   <TextField
-                    name="B2P"
+                    name="b2pFund"
                     label="B2P"
                     value={values.b2pFund}
+                    disabled={isDisable}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={touched.b2pFund && Boolean(errors.b2pFund)}
@@ -331,9 +348,10 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     fullWidth
                   />
                   <TextField
-                    name="B2P Interest"
+                    name="b2pFundInterest"
                     label="Interest (%)"
                     value={values.b2pFundInterest}
+                    disabled={isDisable}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={
@@ -345,9 +363,10 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     fullWidth
                   />
                   <TextField
-                    name="B2P Sharing"
+                    name="b2pFundSharing"
                     label="Sharing (%)"
                     value={values.b2pFundSharing}
+                    disabled={isDisable}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={
@@ -363,6 +382,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     name="clientFund"
                     label="Client"
                     value={values.clientFund}
+                    disabled={isDisable}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     error={touched.clientFund && Boolean(errors.clientFund)}
@@ -375,6 +395,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     value={values.clientFundInterest}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                    disabled={isDisable}
                     error={
                       touched.clientFundInterest &&
                       Boolean(errors.clientFundInterest)
@@ -389,6 +410,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                     label="Sharing (%)"
                     value={values.clientFundSharing}
                     onChange={handleChange}
+                    disabled={isDisable}
                     onBlur={handleBlur}
                     error={
                       touched.clientFundSharing &&
@@ -407,6 +429,7 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                   label="Cost Per Cr"
                   value={values.costPerCr}
                   onChange={handleChange}
+                  disabled={isDisable}
                   onBlur={handleBlur}
                   error={touched.costPerCr && Boolean(errors.costPerCr)}
                   helperText={touched.costPerCr && errors.costPerCr}
@@ -415,18 +438,20 @@ const BrokerFormPopup = ({ open, handleClose, onFormSubmit, brokerData }) => {
                 />
 
                 {/* Action Buttons */}
-                <div className="flex justify-end gap-4 mt-4">
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={handleClose}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" variant="contained" color="primary">
-                    {initialValues.id ? "Update Broker" : "Add Broker"}
-                  </Button>
-                </div>
+                {!isDisable && (
+                  <div className="flex justify-end gap-4 mt-4">
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={handleClose}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" variant="contained" color="primary">
+                      {initialValues.id ? "Update Broker" : "Add Broker"}
+                    </Button>
+                  </div>
+                )}
               </div>
             </Form>
           )}

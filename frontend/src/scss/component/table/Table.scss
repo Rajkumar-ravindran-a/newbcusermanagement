@@ -2,6 +2,12 @@
 
 .custom{
   padding: 1.3rem;
+  .total-div{
+    color: color_variables.$headerColor;
+  }
+  .headertext{
+    color: color_variables.$headerColor;
+  }
   .tble-custom{
     position: relative;
     // .tble-head{

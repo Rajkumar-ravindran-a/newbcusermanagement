@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -18,6 +18,7 @@ const CustomTable = ({
   tableData = [],
   renderAction,
   loading,
+  headerTotal,
   onRowClick,
 }) => {
   const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
@@ -43,8 +44,7 @@ const CustomTable = ({
 
   const handleSort = (columnKey) => {
     setSortConfig((prevConfig) => {
-      const isAscending =
-        prevConfig.key === columnKey && prevConfig.direction === "asc";
+      const isAscending = prevConfig.key === columnKey && prevConfig.direction === "asc";
       return {
         key: columnKey,
         direction: isAscending ? "desc" : "asc",
@@ -52,16 +52,19 @@ const CustomTable = ({
     });
   };
 
-  const sortedData = React.useMemo(() => {
+  const sortedData = useMemo(() => {
     if (!sortConfig.key) return tableData;
+
     return [...tableData].sort((a, b) => {
-      if (a[sortConfig.key] < b[sortConfig.key]) {
-        return sortConfig.direction === "asc" ? -1 : 1;
+      const aValue = a[sortConfig.key] ?? "";
+      const bValue = b[sortConfig.key] ?? "";
+
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortConfig.direction === "asc" ? aValue - bValue : bValue - aValue;
       }
-      if (a[sortConfig.key] > b[sortConfig.key]) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
-      return 0;
+      return sortConfig.direction === "asc"
+        ? String(aValue).localeCompare(String(bValue))
+        : String(bValue).localeCompare(String(aValue));
     });
   }, [tableData, sortConfig]);
 
@@ -88,15 +91,19 @@ const CustomTable = ({
                     }}
                   >
                     <TableSortLabel
-                      active={sortConfig.key === header.toLowerCase()}
-                      direction={
-                        sortConfig.key === header.toLowerCase()
-                          ? sortConfig.direction
-                          : "asc"
-                      }
-                      onClick={() => handleSort(header.toLowerCase())}
+                      active={sortConfig.key === header}
+                      direction={sortConfig.key === header ? sortConfig.direction : "asc"}
+                      onClick={() => handleSort(header)}
                     >
-                      {header?.toUpperCase()}
+                      <div className="flex flex-col">
+                        <div className="headertext">{header?.toUpperCase()}</div>
+                        <div className="total-div">
+                          {headerTotal.length > 0 &&
+                          Object.keys(headerTotal[0]).includes(header)
+                            ? headerTotal[0][header]
+                            : null}
+                        </div>
+                      </div>
                     </TableSortLabel>
                   </TableCell>
                 ))}
@@ -121,15 +128,13 @@ const CustomTable = ({
                 }}
               >
                 {Object.keys(rowData)
-                  .filter((key) => !excludedKeys.includes(key)) // Exclude columns
+                  .filter((key) => !excludedKeys.includes(key))
                   .map((key, colIndex) => (
                     <TableCell
                       key={`${rowIndex}-${colIndex}`}
                       align="center"
                       sx={{
                         width: columnWidths[colIndex] || "auto",
-                        minWidth: columnWidths[colIndex] || 150,
-                        maxWidth: columnWidths[colIndex] || 300,
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -154,11 +159,7 @@ const CustomTable = ({
             ))}
             {!loading && sortedData.length === 0 && (
               <TableRow>
-                <TableCell
-                  colSpan={title.length}
-                  className="middle-noData"
-                  align="center"
-                >
+                <TableCell colSpan={title.length} className="middle-noData" align="center">
                   No data found.
                 </TableCell>
               </TableRow>
