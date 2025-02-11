@@ -68,7 +68,7 @@ const AdminSettings = () => {
   const [rowPopups, setRowPopups] = useState(false);
   const [rowData, setRowData] = useState({});
   const [brokerTotel, setBrokerTotel] = useState([]);
-  const [viewByPopup, setViewByPopup] = useState(false)
+  const [viewByPopup, setViewByPopup] = useState(false);
 
   // Fetch Brokers Data
   const getBrokerData = useCallback(async () => {
@@ -134,7 +134,7 @@ const AdminSettings = () => {
             </Dropdown>
           ),
         }));
-        
+
         const brokerTable = response?.data?.totals?.map((brokerTotal) => ({
           Gross: brokerTotal.totalGrossFund,
           Arbitrage: brokerTotal.totalArbitrageFund,
@@ -221,6 +221,7 @@ const AdminSettings = () => {
         <div className="flex justify-between align-middle mb-2">
           <Typography className="mt-2">
             Broker Name - {rowData["Broker Name"]}
+            {console.log("Broker Name", rowData)}
           </Typography>
           <IconButton onClick={handlePopupClose}>
             <IoClose />
@@ -235,7 +236,153 @@ const AdminSettings = () => {
             gap: 5,
           }}
         >
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-4">
+            {/* Broker Name */}
+            <TextField
+              name="brokerName"
+              label="Broker Name"
+              value={rowData["Broker Name"]}
+              sx={{
+                '& .Mui-disabled': { 
+                  color: "black",
+                }
+              }}
+              disabled
+              inputProps={{
+                style: {
+                  textTransform: "uppercase",
+                  color: "black"
+                }
+              }}
+            />
+
+            {/* Gross Fund */}
+            <div className="flex gap-4">
+              <TextField
+                name="grossFund"
+                label="Gross Fund (1Cr)"
+                value={rowData["Gross Fund"]}
+                disabled
+                fullWidth
+              />
+              <TextField
+                name="grossFundInterest"
+                label="Interest (%)"
+                value={rowData["Gross Fund Interest"]}
+                disabled
+                fullWidth
+              />
+              <TextField
+                name="grossFundSharing"
+                label="Sharing (%)"
+                value={rowData["Gross Fund Sharing"]}
+                disabled
+                fullWidth
+              />
+            </div>
+
+            {/* Arbitrage Fund */}
+            <div className="flex gap-4">
+              <TextField
+                name="arbitrageFund"
+                label="Arbitrage Fund (1Cr)"
+                value={rowData["Arbitrage Fund"]}
+                disabled
+                fullWidth
+              />
+              <TextField
+                name="arbitrageFundInterest"
+                label="Interest (%)"
+                value={rowData["Arbitrage Fund Interest"]}
+                disabled
+                fullWidth
+              />
+              <TextField
+                name="arbitrageFundSharing"
+                label="Sharing (%)"
+                value={rowData["Arbitrage Fund Sharing"]}
+                disabled
+                fullWidth
+              />
+            </div>
+
+            {/* Prop Fund */}
+            <div className="flex gap-4">
+              <TextField 
+              name="propFund" 
+              label="Prop Fund (1Cr)" 
+              value={rowData["Prop Fund"]}
+              disabled
+              fullWidth />
+              <TextField
+                name="propFundInterest"
+                label="Interest (%)"
+                value={rowData["Prop Fund Interest"]}
+                disabled
+                fullWidth
+              />
+              <TextField 
+              name="propFundSharing" 
+              label="Sharing (%)" 
+              value={rowData["Prop Fund Sharing"]}
+              disabled
+              fullWidth />
+            </div>
+
+            {/* B2P Fund */}
+
+            <div className="flex gap-4">
+              <TextField name="b2pFund" 
+              value={rowData["b2pFund"]}
+              label="B2P" 
+              disabled
+              fullWidth />
+              <TextField
+                name="b2pFundInterest"
+                label="Interest (%)"
+                value={rowData["b2pFundInterest"]}
+                disabled
+                fullWidth
+              />
+              <TextField name="b2pFundSharing" 
+              value={rowData["b2pFundsharing"]}
+              label="Sharing (%)"
+              disabled fullWidth />
+            </div>
+            {/* Client Fund */}
+            <div className="flex gap-4">
+              <TextField name="clientFund"
+              value={rowData["clientFund"]}
+              label="Client"
+              disabled
+              fullWidth />
+              <TextField
+                name="clientFundInterest"
+                label="Interest (%)"
+                value={rowData["clientFundInterest"]}
+                disabled
+                fullWidth
+              />
+              <TextField
+                name="clientFundSharing"
+                label="Sharing (%)"
+                value={rowData["clientFundSharing"]}
+                fullWidth
+                disabled
+              />
+            </div>
+
+            {/* Cost Per Cr */}
+            <TextField
+              name="costPerCr"
+              label="Cost Per Cr"
+              value={rowData["Cost Per Cr"]}
+              fullWidth
+              margin="normal"
+              disabled
+            />
+          </div>
+          {/* <div className="flex gap-2">
             <Paper className="flex-1">
               <TableContainer>
                 <Table>
@@ -370,7 +517,7 @@ const AdminSettings = () => {
                 </TableBody>
               </Table>
             </TableContainer>
-          </Paper>
+          </Paper> */}
         </div>
       </CommonPopup>
       <Card
