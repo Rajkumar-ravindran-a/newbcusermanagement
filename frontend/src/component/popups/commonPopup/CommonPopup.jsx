@@ -1,7 +1,5 @@
 import {Modal, Box } from "@mui/material";
 
-
-
 const CommonPopup = ({ open, handleClose, children }) => {
   return (
     <Modal open={open} onClose={handleClose}>
@@ -17,7 +15,7 @@ const CommonPopup = ({ open, handleClose, children }) => {
           p: 2,
           borderRadius: 2,
           overflowY: "auto",
-          height: 600,
+          height: "80%",
         }}
       >
         {children}
