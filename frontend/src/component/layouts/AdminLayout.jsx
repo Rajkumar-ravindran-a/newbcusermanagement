@@ -10,8 +10,12 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@nextui-org/react";
+import { useDispatch } from "react-redux";
+import {open} from '../../redux/popups/PopupsSlice.js';
+import UtilityPopup from "../popups/utilityPopup/UtilityPopup";
 
 const AdminLayout = ({ children, pageTitle, pageSubtitle }) => {
+  const dispatch = useDispatch();
   const token = localStorage.getItem("token");
   const decoded = jwtDecode(token);
   console.warn(decoded)
@@ -21,6 +25,7 @@ const AdminLayout = ({ children, pageTitle, pageSubtitle }) => {
   };
   return (
     <div className="flex h-full w-full gap-2">
+      <UtilityPopup/>
       <div className="adminLayoutNavbar">
         <Navbar role={decoded.role}/>
       </div>
@@ -62,8 +67,10 @@ const AdminLayout = ({ children, pageTitle, pageSubtitle }) => {
             </DropdownTrigger>
             <DropdownMenu aria-label="Static Actions" variant="faded">
               {/* <DropdownItem key="new">New file</DropdownItem>
-              <DropdownItem key="copy">Copy link</DropdownItem>
-              <DropdownItem key="edit">Edit file</DropdownItem> */}
+              <DropdownItem key="copy">Copy link</DropdownItem> */}
+              <DropdownItem key="profile"  onPress={()=>{
+                  dispatch(open());
+              }}>Profile</DropdownItem> 
               <DropdownItem key="delete" className="text-danger" color="danger">
                 <Button className="w-full text-danger" onClick={handleLogout}>
                   Logout
